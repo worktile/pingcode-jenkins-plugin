@@ -1,0 +1,9 @@
+.idea/
+work/
+target/
+worktile.iml
+
+# vscode
+.project
+.classpath
+.settings
