@@ -8,7 +8,6 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -55,7 +54,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject formatData) throws FormException {
         String endpoint = formatData.getString("endpoint");
-        if (StringUtils.isBlank(endpoint)) {
+        if (WorktileUtils.isBlank(endpoint)) {
             endpoint = WTGlobalConfiguration.PRODUCT_ENDPOINT;
         }
         setEndpoint(endpoint);
@@ -66,19 +65,19 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     }
 
     public FormValidation doCheckEndpoint(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint) {
-        if (StringUtils.isNotBlank(endpoint) && (!endpoint.startsWith("http") || !endpoint.startsWith("https"))) {
+        if (WorktileUtils.isNotBlank(endpoint) && !WorktileUtils.isURL(endpoint)) {
             return FormValidation.error("endpoint format error");
         }
         return FormValidation.ok();
     }
 
     public FormValidation doCheckClientId(@QueryParameter(value = "clientId", fixEmpty = true) String clientId) {
-        return StringUtils.isNotBlank(clientId) ? FormValidation.ok()
+        return WorktileUtils.isNotBlank(clientId) ? FormValidation.ok()
                 : FormValidation.error("client id can not be empty");
     }
 
     public FormValidation doCheckSecretKey(@QueryParameter(value = "clientId", fixEmpty = true) String secretkey) {
-        return StringUtils.isNotBlank(secretkey) ? FormValidation.ok()
+        return WorktileUtils.isNotBlank(secretkey) ? FormValidation.ok()
                 : FormValidation.error("secret key can not be empty");
     }
 
