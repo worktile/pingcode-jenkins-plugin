@@ -25,5 +25,8 @@ public class ProjectListener extends RunListener<Run> {
         log.println("build run.getId ? = " + run.getId());
         log.println("build run duration" + run.getDuration());
         log.println("build run getUrl" + run.getUrl());
+        log.println("endpoint " + WTGlobalConfiguration.get().getEndpoint());
+        log.println("clientId " + WTGlobalConfiguration.get().getClientId());
+        log.println("secretKey " + WTGlobalConfiguration.get().getSecretKey());
     }
 }
