@@ -56,11 +56,12 @@
   <dependencies>
 
     <!-- maven dependency -->
-    <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+
+    <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp -->
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.5.12</version>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>4.5.0</version>
     </dependency>
 
     <dependency>
