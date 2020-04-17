@@ -67,7 +67,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
     public FormValidation doCheckEndpoint(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint) {
         if (StringUtils.isNotBlank(endpoint) && (!endpoint.startsWith("http") || !endpoint.startsWith("https"))) {
-            return FormValidation.error("endpoint wrong");
+            return FormValidation.error("endpoint format error");
         }
         return FormValidation.ok();
     }
