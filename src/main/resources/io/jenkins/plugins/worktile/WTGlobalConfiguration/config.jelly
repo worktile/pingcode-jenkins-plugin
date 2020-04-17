@@ -1,17 +1,17 @@
 <?jelly escape-by-default='true' ?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
   <f:section title="Worktile Application">
-    <f:entry title="Endpoint" field="endpoint">
-      <f:textbox />
+    <f:entry title="Endpoint">
+      <f:textbox field="endpoint" default="${WTGlobalConfiguration.defaultEndpoint}" />
     </f:entry>
-    <f:entry title="Client Id" field="clientId">
-      <f:textbox />
+    <f:entry title="Client id">
+      <f:textbox field="clientId" />
     </f:entry>
-    <f:entry title="Secret Key" field="secretKey">
-      <f:password />
+    <f:entry title="Client secret">
+      <f:password field="clientSecret" />
     </f:entry>
     <f:entry>
-      <f:validateButton title="TestConnection" method="validate" with="clientId,secretKey" />
+      <f:validateButton title="TestConnection" method="testConnection" with="endpoint,clientId,clientSecret" />
     </f:entry>
   </f:section>
 </j:jelly>
