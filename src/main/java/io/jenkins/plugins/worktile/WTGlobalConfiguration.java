@@ -18,15 +18,15 @@ import org.kohsuke.stapler.StaplerRequest;
 
 @Extension
 public class WTGlobalConfiguration extends GlobalConfiguration {
-    public static final String PRODUCT_ENDPOINT = "https://open.worktile.com";
+    public static final String DEFAULT_ENDPOINT = "https://open.worktile.com";
     public static final Logger logger = Logger.getLogger(WTGlobalConfiguration.class.getName());
 
     private String endpoint;
     private String clientId;
     private String clientSecret;
 
-    public String getDefaultEndpont() {
-        return WTGlobalConfiguration.PRODUCT_ENDPOINT;
+    public String getDefaultEndpoint() {
+        return WTGlobalConfiguration.DEFAULT_ENDPOINT;
     }
 
     @DataBoundSetter
@@ -64,7 +64,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     public boolean configure(StaplerRequest req, JSONObject formatData) throws FormException {
         String endpoint = formatData.getString("endpoint");
         if (WorktileUtils.isBlank(endpoint)) {
-            endpoint = WTGlobalConfiguration.PRODUCT_ENDPOINT;
+            endpoint = WTGlobalConfiguration.DEFAULT_ENDPOINT;
         }
         String clientId = formatData.getString("clientId");
         String clientSecret = formatData.getString("clientSecret");

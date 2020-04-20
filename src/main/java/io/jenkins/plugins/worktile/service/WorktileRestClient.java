@@ -7,7 +7,7 @@ import io.jenkins.plugins.worktile.model.BuildResult;
 public interface WorktileRestClient {
     boolean ping() throws IOException;
 
-    void createBuild(BuildResult buildResult) throws IOException;
+    String createBuild(BuildResult buildResult) throws IOException;
 
     void createRelease() throws IOException;
 }

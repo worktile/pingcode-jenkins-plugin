@@ -14,8 +14,10 @@ import io.jenkins.plugins.worktile.model.BuildResult;
 import io.jenkins.plugins.worktile.model.WTError;
 import io.jenkins.plugins.worktile.model.WorktileToken;
 import jenkins.model.Jenkins;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class WorktileRestService implements WorktileRestClient, WorktileTokenable {
@@ -64,7 +66,18 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     @Override
-    public void createBuild(BuildResult result) throws IOException { }
+    public String createBuild(BuildResult result) throws IOException {
+        WorktileToken token = this.getToken();
+        MediaType JSON = MediaType.get("application/json; charset=utf-8");
+        String json = this.gson.toJson(result);
+        RequestBody body = RequestBody.create(json, JSON);
+        Request request = new Request.Builder().url(this.getApiPath() + "/build/builds")
+                .addHeader("Authorization", "Bearer " + token.getAccessToken()).post(body).build();
+
+        try (Response response = this.httpClient.newCall(request).execute()) {
+            return response.body().string();
+        }
+    }
 
     @Override
     public boolean ping() throws IOException {
@@ -79,7 +92,8 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     @Override
-    public void createRelease() throws IOException { }
+    public void createRelease() throws IOException {
+    }
 
     @Override
     public WorktileToken getToken() throws IOException {
@@ -106,8 +120,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     private WorktileToken getTokenFromApi() throws IOException {
         String path = String.format(
                 this.getApiPath() + "/auth/token?grant_type=client_credentials&client_id=%s&client_secret=%s",
-                this.clientId,
-                this.clientSecret);
+                this.clientId, this.clientSecret);
 
         Request request = new Request.Builder().url(path).build();
         try (Response response = this.httpClient.newCall(request).execute()) {
@@ -141,10 +154,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     private XmlFile getConfigFile() {
-        File file = new File(
-            Objects.requireNonNull(Jenkins.getInstanceOrNull()).getRootDir(),
-            "worktile.token.xml"
-        );
+        File file = new File(Objects.requireNonNull(Jenkins.getInstanceOrNull()).getRootDir(), "worktile.token.xml");
         return new XmlFile(file);
     }
 }

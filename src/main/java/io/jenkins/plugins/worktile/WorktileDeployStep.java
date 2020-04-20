@@ -1,6 +1,7 @@
 package io.jenkins.plugins.worktile;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import hudson.Extension;
@@ -10,12 +11,12 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import net.sf.json.JSONObject;
 
-public class WorktitleCreateDeployRecord extends Notifier {
+public class WorktileDeployStep extends Notifier {
 
     private String environmentName;
 
     @DataBoundConstructor
-    public WorktitleCreateDeployRecord(String envName) {
+    public WorktileDeployStep(String envName) {
         setEnvironmentName(envName);
     }
 
@@ -23,6 +24,7 @@ public class WorktitleCreateDeployRecord extends Notifier {
         return environmentName;
     }
 
+    @DataBoundSetter
     public void setEnvironmentName(String environmentName) {
         this.environmentName = environmentName;
     }
@@ -31,7 +33,7 @@ public class WorktitleCreateDeployRecord extends Notifier {
     public static final class Descriptor extends BuildStepDescriptor<Publisher> {
 
         public Descriptor() {
-            super(WorktitleCreateDeployRecord.class);
+            super(WorktileDeployStep.class);
         }
 
         @SuppressWarnings("rawtypes")
@@ -42,12 +44,12 @@ public class WorktitleCreateDeployRecord extends Notifier {
 
         @Override
         public String getDisplayName() {
-            return "worktile create deploy record";
+            return "worktile deploy step";
         }
 
         @Override
-        public WorktitleCreateDeployRecord newInstance(StaplerRequest request, JSONObject formdata) {
-            return request.bindJSON(WorktitleCreateDeployRecord.class, formdata);
+        public WorktileDeployStep newInstance(StaplerRequest request, JSONObject formdata) {
+            return request.bindJSON(WorktileDeployStep.class, formdata);
         }
     }
 }

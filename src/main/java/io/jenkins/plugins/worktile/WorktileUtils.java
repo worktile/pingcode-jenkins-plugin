@@ -24,4 +24,8 @@ public class WorktileUtils {
     public static boolean isBlank(String value) {
         return StringUtils.isBlank(value);
     }
+
+    public static long toSafeTs(long time) {
+        return Math.round(time / 1000);
+    }
 }
