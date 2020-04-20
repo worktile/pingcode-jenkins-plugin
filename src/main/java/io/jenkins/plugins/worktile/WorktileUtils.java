@@ -1,12 +1,16 @@
 package io.jenkins.plugins.worktile;
 
 import java.net.URL;
+import java.util.HashSet;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 public class WorktileUtils {
 
-    public WorktileUtils() {
-    }
+    public final static Logger logger = Logger.getLogger(WorktileUtils.class.getName());
+    public final static Pattern WORKITEM_PATTERN = Pattern.compile("#[^/]*([A-Za-z0-9_])+-([0-9])+");
 
     public static boolean isURL(String url) {
         try {
@@ -27,5 +31,22 @@ public class WorktileUtils {
 
     public static long toSafeTs(long time) {
         return Math.round(time / 1000);
+    }
+
+    public static String[] getMatchSet(Pattern pattern, String[] messages, boolean breakFirstMatch) {
+        HashSet<String> set = new HashSet<>();
+        for (String msg : messages) {
+            Matcher matcher = pattern.matcher(msg);
+            if (matcher.find()) {
+                set.add(matcher.group());
+                if (breakFirstMatch)
+                    break;
+            }
+        }
+        return set.toArray(new String[set.size()]);
+    }
+
+    public static String[] getWorkItems(String[] messages) {
+        return WorktileUtils.getMatchSet(WorktileUtils.WORKITEM_PATTERN, messages, false);
     }
 }
