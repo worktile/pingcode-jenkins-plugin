@@ -1,21 +1,16 @@
 package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
-import java.text.Normalizer;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.util.FormValidation;
-import io.jenkins.plugins.worktile.service.WorktileRestService;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;

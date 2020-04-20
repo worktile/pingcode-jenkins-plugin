@@ -2,13 +2,7 @@ package io.jenkins.plugins.worktile.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.sql.Time;
-import java.time.Instant;
-import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.google.gson.FieldNamingPolicy;
@@ -19,9 +13,7 @@ import hudson.XmlFile;
 import io.jenkins.plugins.worktile.model.BuildResult;
 import io.jenkins.plugins.worktile.model.WTError;
 import io.jenkins.plugins.worktile.model.WorktileToken;
-
 import jenkins.model.Jenkins;
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
