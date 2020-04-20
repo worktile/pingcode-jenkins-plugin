@@ -1,12 +1,15 @@
 package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.util.FormValidation;
+import io.jenkins.plugins.worktile.service.WorktileRestService;
+import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -70,15 +73,9 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         }
         String clientId = formatData.getString("clientId");
         String clientSecret = formatData.getString("clientSecret");
-
         setEndpoint(endpoint);
         setClientId(clientId);
         setClientSecret(clientSecret);
-
-        WTGlobalConfiguration.logger.info(endpoint);
-        WTGlobalConfiguration.logger.info(clientId);
-        WTGlobalConfiguration.logger.info(clientSecret);
-
         save();
         return true;
     }
@@ -104,16 +101,16 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             @QueryParameter(value = "clientId", fixEmpty = true) String clientId,
             @QueryParameter(value = "clientSecret", fixEmpty = true) String clientSecret) throws IOException {
 
-        String apiUrl = endpoint + "/auth/token" + "?grant_type=client_credentials" + "&client_id=" + clientId
-                + "&client_secret=" + clientSecret;
+        WorktileRestSession session = new WorktileRestSession(endpoint, clientId, clientSecret);
 
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder().url(apiUrl).build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.isSuccessful() ? FormValidation.ok("TestConnection Successful")
-                    : FormValidation.error("connect api end error");
+        try {
+            boolean ret = session.doConnectTest();
+            return ret ? FormValidation.ok("Connect Worktile API Successfully") : FormValidation.error("validate ok");
+        } catch (Exception e) {
+            WTGlobalConfiguration.logger.warning("test connect error");
+            return FormValidation.error("Connect Worktile API Error, err : " + e.getMessage());
         }
+
     }
 
     @Nonnull
