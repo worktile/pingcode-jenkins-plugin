@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import io.jenkins.plugins.worktile.WTGlobalConfiguration;
 import io.jenkins.plugins.worktile.model.BuildResult;
+import io.jenkins.plugins.worktile.model.WTError;
 
 public class WorktileRestSession {
     public WorktileRestSession(String endpoint, String clientId, String clientSecret) {
@@ -17,11 +18,11 @@ public class WorktileRestSession {
 
     private final WorktileRestService service;
 
-    public boolean doConnectTest() throws IOException {
+    public WTError doConnectTest() throws IOException {
         return this.service.ping();
     }
 
-    public String createBuild(BuildResult result) throws IOException {
+    public WTError createBuild(BuildResult result) throws IOException {
         return this.service.createBuild(result);
     }
 }

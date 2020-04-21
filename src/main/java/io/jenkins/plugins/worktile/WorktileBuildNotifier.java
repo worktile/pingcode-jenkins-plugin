@@ -1,7 +1,6 @@
 package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -56,16 +55,17 @@ public class WorktileBuildNotifier extends Notifier {
         WorktileRestSession session = new WorktileRestSession();
         try {
             WTError error = session.createBuild(this.makeResult(build, listener));
-            if (error != null) {
-                listener.getLogger().println(error.getCode() + " " + error.getMessage());
+            if (error.getMessage() != null) {
+                listener.getLogger().println(error.toString());
             }
-            listener.getLogger().println("Send build data to worktile api");
+            listener.getLogger().println("Send build data to worktile open api");
         } catch (IOException error) {
-            listener.getLogger().println("create worktile build error");
+            listener.getLogger().println("Create worktile build error " + error.getMessage());
         }
         return;
     }
 
+    @SuppressWarnings("rawtypes")
     private BuildResult makeResult(AbstractBuild<?, ?> build, BuildListener listener) throws IOException {
         BuildResult result = new BuildResult();
         result.name = build.getFullDisplayName();
@@ -85,6 +85,7 @@ public class WorktileBuildNotifier extends Notifier {
             set.add(entry.getMsg());
         }
         try {
+            // Get workItems from branch name
             String branch = build.getEnvironment(listener).get("GIT_BRANCH");
             set.add(branch);
         } catch (Exception error) {
@@ -93,8 +94,9 @@ public class WorktileBuildNotifier extends Notifier {
         result.workItems = WorktileUtils.getWorkItems(set.toArray(new String[set.size()]));
 
         try {
+            logger.info("start match overview " + this.getOverview());
             String[] matched = WorktileUtils.getMatchSet(Pattern.compile(this.getOverview()),
-                    build.getLog().split("\n"), true);
+                    build.getLog().split("\n"), true, true);
             result.resultOverview = matched.length > 0 ? matched[0] : "";
         } catch (Exception error) {
             logger.info("match overview result error" + error.getMessage());

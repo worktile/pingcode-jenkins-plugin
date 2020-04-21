@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import hudson.XmlFile;
+import io.jenkins.plugins.worktile.WorktileUtils;
 import io.jenkins.plugins.worktile.model.BuildResult;
 import io.jenkins.plugins.worktile.model.WTError;
 import io.jenkins.plugins.worktile.model.WorktileToken;
@@ -19,6 +20,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.Request.Builder;
 
 public class WorktileRestService implements WorktileRestClient, WorktileTokenable {
     public static final Logger logger = Logger.getLogger(WorktileRestService.class.getName());
@@ -66,33 +68,51 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     @Override
-    public String createBuild(BuildResult result) throws IOException {
-        WorktileToken token = this.getToken();
+    public WTError createBuild(BuildResult result) throws IOException {
+        String path = this.getApiPath() + "/build/builds";
+        // String path = "https://request.worktile.com/cjynOjmRG";
+        return this.executePost(path, result, true);
+    }
+
+    private WTError executePost(String url, Object tClass, boolean requiredToken) throws IOException {
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
-        String json = this.gson.toJson(result);
+        String json = this.gson.toJson(tClass);
         RequestBody body = RequestBody.create(json, JSON);
-        Request request = new Request.Builder().url(this.getApiPath() + "/build/builds")
-                .addHeader("Authorization", "Bearer " + token.getAccessToken()).post(body).build();
+        Builder requestBuilder = new Request.Builder().url(url).post(body);
+        if (requiredToken) {
+            WorktileToken token = this.getToken();
+            requestBuilder.addHeader("Authorization", "Bearer " + token.getAccessToken());
+        }
+        try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
+            return this.gson.fromJson(response.body().string(), WTError.class);
+        }
+    }
 
-        try (Response response = this.httpClient.newCall(request).execute()) {
-            return response.body().string();
+    private <T> T executeGet(String url, Class<T> pClass, boolean requiredToken) throws IOException {
+        Builder requestBuilder = new Request.Builder().url(url);
+        if (requiredToken) {
+            WorktileToken token = this.getToken();
+            requestBuilder.addHeader("Authorization", "Bearer " + token.getAccessToken());
+        }
+        try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
+            String jsonString = Objects.requireNonNull(response.body()).string();
+            logger.info(" response from api " + jsonString);
+            return this.gson.fromJson(jsonString, pClass);
         }
     }
 
     @Override
-    public boolean ping() throws IOException {
-        WorktileToken token = this.getToken();
+    public WTError ping() throws IOException {
+        String path = String.format(
+                this.getApiPath() + "/auth/token?grant_type=client_credentials&client_id=%s&client_secret=%s",
+                this.clientId, this.clientSecret);
 
-        Request request = new Request.Builder().url(this.getApiPath() + "/auth/ping")
-                .addHeader("Authorization", "Bearer " + token.getAccessToken()).build();
-        try (Response response = this.httpClient.newCall(request).execute()) {
-            WTError err = this.gson.fromJson(Objects.requireNonNull(response.body()).string(), WTError.class);
-            return err != null;
-        }
+        return this.executeGet(path, WTError.class, false);
     }
 
     @Override
-    public void createRelease() throws IOException {
+    public WTError createRelease() throws IOException {
+        return null;
     }
 
     @Override
@@ -103,6 +123,8 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
         this.token = this.getTokenFromDisk();
         if (this.token == null) {
             this.token = this.getTokenFromApi();
+            if (this.token != null)
+                this.saveToken(this.token);
         }
         return this.token;
     }
@@ -122,14 +144,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
                 this.getApiPath() + "/auth/token?grant_type=client_credentials&client_id=%s&client_secret=%s",
                 this.clientId, this.clientSecret);
 
-        Request request = new Request.Builder().url(path).build();
-        try (Response response = this.httpClient.newCall(request).execute()) {
-            this.token = gson.fromJson(Objects.requireNonNull(response.body()).string(), WorktileToken.class);
-        }
-        if (this.token != null) {
-            this.saveToken(this.token);
-        }
-        return this.token;
+        return this.executeGet(path, WorktileToken.class, false);
     }
 
     private WorktileToken getTokenFromDisk() throws IOException {
@@ -138,19 +153,19 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
             logger.warning("worktile token file not found");
             return null;
         }
+        WorktileToken token = null;
         try {
-            this.token = (WorktileToken) file.unmarshal(this.token);
+            token = (WorktileToken) file.unmarshal(this.token);
         } catch (Exception error) {
-            logger.warning("file.unmarshal to this.token error = " + error.getMessage());
+            logger.warning("file.unmarshal to token from file error = " + error.getMessage());
         }
-
-        if (this.token != null) {
-            if (System.currentTimeMillis() / 1000 > this.token.getExpiresIn()) {
+        if (token != null) {
+            if (WorktileUtils.isExpired(token.getExpiresIn())) {
                 logger.info("token in cache file is out of date, the token will be set null");
                 this.token = null;
             }
         }
-        return this.token;
+        return token;
     }
 
     private XmlFile getConfigFile() {

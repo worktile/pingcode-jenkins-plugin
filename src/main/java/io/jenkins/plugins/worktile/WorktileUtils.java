@@ -33,12 +33,16 @@ public class WorktileUtils {
         return Math.round(time / 1000);
     }
 
-    public static String[] getMatchSet(Pattern pattern, String[] messages, boolean breakFirstMatch) {
+    public static String[] getMatchSet(Pattern pattern, String[] messages, boolean breakFirstMatch, boolean origin) {
         HashSet<String> set = new HashSet<>();
         for (String msg : messages) {
             Matcher matcher = pattern.matcher(msg);
             if (matcher.find()) {
-                set.add(matcher.group());
+                if (origin) {
+                    set.add(msg);
+                } else {
+                    set.add(matcher.group());
+                }
                 if (breakFirstMatch)
                     break;
             }
@@ -47,6 +51,15 @@ public class WorktileUtils {
     }
 
     public static String[] getWorkItems(String[] messages) {
-        return WorktileUtils.getMatchSet(WorktileUtils.WORKITEM_PATTERN, messages, false);
+        String[] workItems = WorktileUtils.getMatchSet(WorktileUtils.WORKITEM_PATTERN, messages, false, false);
+        HashSet<String> sets = new HashSet<>();
+        for (String item : workItems) {
+            sets.add(item.substring(1));
+        }
+        return sets.toArray(new String[sets.size()]);
+    }
+
+    public static boolean isExpired(long future) {
+        return toSafeTs(System.currentTimeMillis()) > future;
     }
 }

@@ -3,11 +3,12 @@ package io.jenkins.plugins.worktile.service;
 import java.io.IOException;
 
 import io.jenkins.plugins.worktile.model.BuildResult;
+import io.jenkins.plugins.worktile.model.WTError;
 
 public interface WorktileRestClient {
-    boolean ping() throws IOException;
+    WTError ping() throws IOException;
 
-    String createBuild(BuildResult buildResult) throws IOException;
+    WTError createBuild(BuildResult buildResult) throws IOException;
 
-    void createRelease() throws IOException;
+    WTError createRelease() throws IOException;
 }

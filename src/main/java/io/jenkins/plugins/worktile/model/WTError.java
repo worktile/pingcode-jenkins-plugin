@@ -24,4 +24,9 @@ public class WTError {
     public void setCode(String code) {
         this.code = code;
     }
+
+    @Override
+    public String toString() {
+        return "WTError code: " + getCode() + " " + "message: " + getMessage();
+    }
 }

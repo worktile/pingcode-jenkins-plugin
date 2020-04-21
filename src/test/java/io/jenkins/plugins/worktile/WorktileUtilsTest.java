@@ -27,4 +27,10 @@ public class WorktileUtilsTest {
         String[] array3 = WorktileUtils.getWorkItems(new String[] { "#hello", "#world", "welcome" });
         assertEquals(0, array3.length);
     }
+
+    @Test
+    public void testIsExpired() {
+        assertEquals(WorktileUtils.isExpired(WorktileUtils.toSafeTs(System.currentTimeMillis() - 200000)), true);
+        assertEquals(WorktileUtils.isExpired(WorktileUtils.toSafeTs(System.currentTimeMillis() + 200000)), false);
+    }
 }
