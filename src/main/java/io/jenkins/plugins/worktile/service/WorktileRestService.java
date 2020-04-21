@@ -11,9 +11,9 @@ import com.google.gson.GsonBuilder;
 
 import hudson.XmlFile;
 import io.jenkins.plugins.worktile.WorktileUtils;
-import io.jenkins.plugins.worktile.model.BuildResult;
-import io.jenkins.plugins.worktile.model.WTError;
-import io.jenkins.plugins.worktile.model.WorktileToken;
+import io.jenkins.plugins.worktile.model.WTBuildEntity;
+import io.jenkins.plugins.worktile.model.WTErrorEntity;
+import io.jenkins.plugins.worktile.model.WTTokenEntity;
 import jenkins.model.Jenkins;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -27,7 +27,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
 
     private final String verPrefix = "v1";
     private OkHttpClient httpClient;
-    private WorktileToken token;
+    private WTTokenEntity token;
 
     private final String ApiPath;
 
@@ -68,30 +68,30 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     @Override
-    public WTError createBuild(BuildResult result) throws IOException {
+    public WTErrorEntity createBuild(WTBuildEntity entity) throws IOException {
         String path = this.getApiPath() + "/build/builds";
         // String path = "https://request.worktile.com/cjynOjmRG";
-        return this.executePost(path, result, true);
+        return this.executePost(path, entity, true);
     }
 
-    private WTError executePost(String url, Object tClass, boolean requiredToken) throws IOException {
+    private WTErrorEntity executePost(String url, Object tClass, boolean requiredToken) throws IOException {
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         String json = this.gson.toJson(tClass);
         RequestBody body = RequestBody.create(json, JSON);
         Builder requestBuilder = new Request.Builder().url(url).post(body);
         if (requiredToken) {
-            WorktileToken token = this.getToken();
+            WTTokenEntity token = this.getToken();
             requestBuilder.addHeader("Authorization", "Bearer " + token.getAccessToken());
         }
         try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
-            return this.gson.fromJson(response.body().string(), WTError.class);
+            return this.gson.fromJson(response.body().string(), WTErrorEntity.class);
         }
     }
 
     private <T> T executeGet(String url, Class<T> pClass, boolean requiredToken) throws IOException {
         Builder requestBuilder = new Request.Builder().url(url);
         if (requiredToken) {
-            WorktileToken token = this.getToken();
+            WTTokenEntity token = this.getToken();
             requestBuilder.addHeader("Authorization", "Bearer " + token.getAccessToken());
         }
         try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
@@ -102,21 +102,21 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     @Override
-    public WTError ping() throws IOException {
+    public WTErrorEntity ping() throws IOException {
         String path = String.format(
                 this.getApiPath() + "/auth/token?grant_type=client_credentials&client_id=%s&client_secret=%s",
                 this.clientId, this.clientSecret);
 
-        return this.executeGet(path, WTError.class, false);
+        return this.executeGet(path, WTErrorEntity.class, false);
     }
 
     @Override
-    public WTError createRelease() throws IOException {
+    public WTErrorEntity createRelease() throws IOException {
         return null;
     }
 
     @Override
-    public WorktileToken getToken() throws IOException {
+    public WTTokenEntity getToken() throws IOException {
         if (this.token != null) {
             return this.token;
         }
@@ -130,7 +130,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     @Override
-    public void saveToken(WorktileToken token) throws IOException {
+    public void saveToken(WTTokenEntity token) throws IOException {
         XmlFile file = getConfigFile();
         try {
             file.write(token);
@@ -139,23 +139,23 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
         }
     }
 
-    private WorktileToken getTokenFromApi() throws IOException {
+    private WTTokenEntity getTokenFromApi() throws IOException {
         String path = String.format(
                 this.getApiPath() + "/auth/token?grant_type=client_credentials&client_id=%s&client_secret=%s",
                 this.clientId, this.clientSecret);
 
-        return this.executeGet(path, WorktileToken.class, false);
+        return this.executeGet(path, WTTokenEntity.class, false);
     }
 
-    private WorktileToken getTokenFromDisk() throws IOException {
+    private WTTokenEntity getTokenFromDisk() throws IOException {
         XmlFile file = getConfigFile();
         if (!file.exists()) {
             logger.warning("worktile token file not found");
             return null;
         }
-        WorktileToken token = null;
+        WTTokenEntity token = null;
         try {
-            token = (WorktileToken) file.unmarshal(this.token);
+            token = (WTTokenEntity) file.unmarshal(this.token);
         } catch (Exception error) {
             logger.warning("file.unmarshal to token from file error = " + error.getMessage());
         }
