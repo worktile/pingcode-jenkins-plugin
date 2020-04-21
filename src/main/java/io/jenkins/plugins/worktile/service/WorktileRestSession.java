@@ -1,23 +1,28 @@
 package io.jenkins.plugins.worktile.service;
 
+import java.io.IOException;
+
+import io.jenkins.plugins.worktile.WTGlobalConfiguration;
+import io.jenkins.plugins.worktile.model.BuildResult;
+import io.jenkins.plugins.worktile.model.WTError;
+
 public class WorktileRestSession {
-
-    private String token;
-
-    public String getToken() {
-        return token;
+    public WorktileRestSession(String endpoint, String clientId, String clientSecret) {
+        this.service = new WorktileRestService(endpoint, clientId, clientSecret);
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public WorktileRestSession() {
+        this(WTGlobalConfiguration.get().getEndpoint(), WTGlobalConfiguration.get().getClientId(),
+                WTGlobalConfiguration.get().getClientSecret());
     }
 
-    public WorktileRestSession(String token) {
-        setToken(token);
+    private final WorktileRestService service;
+
+    public WTError doConnectTest() throws IOException {
+        return this.service.ping();
     }
 
-    // public static WorktileRestSession from() throws IOException {
-    // WTGlobalConfiguration config = WTGlobalConfiguration.get();
-    // String endpoint = config.getEndpoint();
-    // }
+    public WTError createBuild(BuildResult result) throws IOException {
+        return this.service.createBuild(result);
+    }
 }

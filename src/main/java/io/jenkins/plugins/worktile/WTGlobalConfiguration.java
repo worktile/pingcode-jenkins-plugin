@@ -7,12 +7,11 @@ import javax.annotation.Nonnull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.util.FormValidation;
+import io.jenkins.plugins.worktile.model.WTError;
+import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -20,15 +19,15 @@ import org.kohsuke.stapler.StaplerRequest;
 
 @Extension
 public class WTGlobalConfiguration extends GlobalConfiguration {
-    public static final String PRODUCT_ENDPOINT = "https://open.worktile.com";
+    public static final String DEFAULT_ENDPOINT = "https://open.worktile.com";
     public static final Logger logger = Logger.getLogger(WTGlobalConfiguration.class.getName());
 
     private String endpoint;
     private String clientId;
     private String clientSecret;
 
-    public String getDefaultEndpont() {
-        return WTGlobalConfiguration.PRODUCT_ENDPOINT;
+    public String getDefaultEndpoint() {
+        return WTGlobalConfiguration.DEFAULT_ENDPOINT;
     }
 
     @DataBoundSetter
@@ -66,19 +65,13 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     public boolean configure(StaplerRequest req, JSONObject formatData) throws FormException {
         String endpoint = formatData.getString("endpoint");
         if (WorktileUtils.isBlank(endpoint)) {
-            endpoint = WTGlobalConfiguration.PRODUCT_ENDPOINT;
+            endpoint = WTGlobalConfiguration.DEFAULT_ENDPOINT;
         }
         String clientId = formatData.getString("clientId");
         String clientSecret = formatData.getString("clientSecret");
-
         setEndpoint(endpoint);
         setClientId(clientId);
         setClientSecret(clientSecret);
-
-        WTGlobalConfiguration.logger.info(endpoint);
-        WTGlobalConfiguration.logger.info(clientId);
-        WTGlobalConfiguration.logger.info(clientSecret);
-
         save();
         return true;
     }
@@ -104,16 +97,17 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             @QueryParameter(value = "clientId", fixEmpty = true) String clientId,
             @QueryParameter(value = "clientSecret", fixEmpty = true) String clientSecret) throws IOException {
 
-        String apiUrl = endpoint + "/auth/token" + "?grant_type=client_credentials" + "&client_id=" + clientId
-                + "&client_secret=" + clientSecret;
+        WorktileRestSession session = new WorktileRestSession(endpoint, clientId, clientSecret);
 
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder().url(apiUrl).build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.isSuccessful() ? FormValidation.ok("TestConnection Successful")
-                    : FormValidation.error("connect api end error");
+        try {
+            WTError err = session.doConnectTest();
+            return err.getMessage() == null ? FormValidation.ok("Connect Worktile API Successfully")
+                    : FormValidation.error(err.getMessage());
+        } catch (Exception e) {
+            WTGlobalConfiguration.logger.warning("test connect error");
+            return FormValidation.error("Connect Worktile API Error, err : " + e.getMessage());
         }
+
     }
 
     @Nonnull
