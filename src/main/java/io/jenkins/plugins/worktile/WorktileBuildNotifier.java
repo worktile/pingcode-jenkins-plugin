@@ -1,14 +1,5 @@
 package io.jenkins.plugins.worktile;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
-
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -22,6 +13,16 @@ import io.jenkins.plugins.worktile.model.WTBuildEntity;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import net.sf.json.JSONObject;
+import org.jetbrains.annotations.NotNull;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class WorktileBuildNotifier extends Notifier {
     private static final long serialVersionUID = 699563338312232812L;
@@ -70,7 +71,7 @@ public class WorktileBuildNotifier extends Notifier {
         result.name = build.getFullDisplayName();
         result.identifier = build.getId();
         result.jobUrl = build.getProject().getAbsoluteUrl();
-        result.status = build.getResult().toString().toLowerCase();
+        result.status = Objects.requireNonNull(build.getResult()).toString().toLowerCase();
         result.startAt = WorktileUtils.toSafeTs(build.getStartTimeInMillis());
         result.endAt = WorktileUtils.toSafeTs(System.currentTimeMillis());
         result.duration = build.getDuration();
@@ -103,7 +104,6 @@ public class WorktileBuildNotifier extends Notifier {
         return result;
     }
 
-    @SuppressWarnings("rawtypes")
     @Extension
     public static class Descriptor extends BuildStepDescriptor<Publisher> {
 
@@ -116,6 +116,7 @@ public class WorktileBuildNotifier extends Notifier {
             return true;
         }
 
+        @NotNull
         @Override
         public String getDisplayName() {
             return "Worktile create build records step";
@@ -123,6 +124,7 @@ public class WorktileBuildNotifier extends Notifier {
 
         @Override
         public WorktileBuildNotifier newInstance(StaplerRequest request, JSONObject formData) throws FormException {
+            assert request != null;
             return request.bindJSON(WorktileBuildNotifier.class, formData);
         }
     }

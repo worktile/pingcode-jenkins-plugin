@@ -1,15 +1,14 @@
 package io.jenkins.plugins.worktile;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
-
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
 
 public class WorktileDeployNotifier extends Notifier {
 
@@ -47,7 +46,6 @@ public class WorktileDeployNotifier extends Notifier {
             super(WorktileDeployNotifier.class);
         }
 
-        @SuppressWarnings("rawtypes")
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> item) {
             return true;
@@ -59,8 +57,9 @@ public class WorktileDeployNotifier extends Notifier {
         }
 
         @Override
-        public WorktileDeployNotifier newInstance(StaplerRequest request, JSONObject formdata) {
-            return request.bindJSON(WorktileDeployNotifier.class, formdata);
+        public WorktileDeployNotifier newInstance(StaplerRequest request, JSONObject formData) {
+            assert request != null;
+            return request.bindJSON(WorktileDeployNotifier.class, formData);
         }
     }
 }
