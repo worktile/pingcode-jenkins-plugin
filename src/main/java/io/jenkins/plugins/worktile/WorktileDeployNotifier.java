@@ -11,14 +11,14 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import net.sf.json.JSONObject;
 
-public class WorktileDeployStep extends Notifier {
+public class WorktileDeployNotifier extends Notifier {
 
     private String environmentName;
 
     private boolean relatedWorkItem;
 
     @DataBoundConstructor
-    public WorktileDeployStep(String envName) {
+    public WorktileDeployNotifier(String envName) {
         setEnvironmentName(envName);
     }
 
@@ -44,7 +44,7 @@ public class WorktileDeployStep extends Notifier {
     public static final class Descriptor extends BuildStepDescriptor<Publisher> {
 
         public Descriptor() {
-            super(WorktileDeployStep.class);
+            super(WorktileDeployNotifier.class);
         }
 
         @SuppressWarnings("rawtypes")
@@ -59,8 +59,8 @@ public class WorktileDeployStep extends Notifier {
         }
 
         @Override
-        public WorktileDeployStep newInstance(StaplerRequest request, JSONObject formdata) {
-            return request.bindJSON(WorktileDeployStep.class, formdata);
+        public WorktileDeployNotifier newInstance(StaplerRequest request, JSONObject formdata) {
+            return request.bindJSON(WorktileDeployNotifier.class, formdata);
         }
     }
 }
