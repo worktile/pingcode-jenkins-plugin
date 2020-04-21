@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import hudson.XmlFile;
+import io.jenkins.plugins.worktile.WTEnvironment;
 import io.jenkins.plugins.worktile.WorktileUtils;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
@@ -72,6 +73,12 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
         String path = this.getApiPath() + "/build/builds";
         // String path = "https://request.worktile.com/cjynOjmRG";
         return this.executePost(path, entity, true);
+    }
+
+    @Override
+    public WTErrorEntity createEnvironment(WTEnvironment environment) throws IOException {
+        String path = this.getApiPath() + "/release/environments";
+        return this.executePost(path, environment, true);
     }
 
     private WTErrorEntity executePost(String url, Object tClass, boolean requiredToken) throws IOException {

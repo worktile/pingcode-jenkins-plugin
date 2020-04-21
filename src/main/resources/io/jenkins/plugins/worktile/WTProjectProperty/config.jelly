@@ -1,0 +1,14 @@
+<?jelly escape-by-default='true' ?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <f:section title="Worktile environment synchronous">
+    <f:entry title="name" field="name">
+      <f:textbox/>
+    </f:entry>
+    <f:entry title="html url" field="htmlUrl">
+      <f:textbox/>
+    </f:entry>
+    <f:entry>
+      <f:validateButton title="SyncEnv" method="syncEnv" with="name,htmlUrl" />
+    </f:entry>
+  </f:section>
+</j:jelly>
