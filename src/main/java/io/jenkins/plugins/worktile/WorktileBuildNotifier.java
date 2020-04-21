@@ -119,11 +119,11 @@ public class WorktileBuildNotifier extends Notifier {
         @NotNull
         @Override
         public String getDisplayName() {
-            return "Worktile create build records step";
+            return "Worktile build notifier";
         }
 
         @Override
-        public WorktileBuildNotifier newInstance(StaplerRequest request, JSONObject formData) throws FormException {
+        public WorktileBuildNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData) throws FormException {
             assert request != null;
             return request.bindJSON(WorktileBuildNotifier.class, formData);
         }

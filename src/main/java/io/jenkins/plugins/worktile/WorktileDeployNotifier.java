@@ -6,42 +6,34 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import net.sf.json.JSONObject;
+import org.jetbrains.annotations.NotNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class WorktileDeployNotifier extends Notifier {
 
-    private String environmentName;
-
-    private boolean relatedWorkItem;
+    private List<String> environments;
 
     @DataBoundConstructor
-    public WorktileDeployNotifier(String envName) {
-        setEnvironmentName(envName);
+    public WorktileDeployNotifier(List<String> environments) {
+       setEnvironments(environments);
     }
 
-    public boolean isRelatedWorkItem() {
-        return relatedWorkItem;
-    }
-
-    @DataBoundSetter
-    public void setRelatedWorkItem(boolean relatedWorkItem) {
-        this.relatedWorkItem = relatedWorkItem;
-    }
-
-    public String getEnvironmentName() {
-        return environmentName;
+    public List<String> getEnvironments() {
+        return environments;
     }
 
     @DataBoundSetter
-    public void setEnvironmentName(String environmentName) {
-        this.environmentName = environmentName;
+    public void setEnvironments(List<String> environments) {
+        this.environments = new ArrayList<>(environments);
     }
 
     @Extension
     public static final class Descriptor extends BuildStepDescriptor<Publisher> {
-
         public Descriptor() {
             super(WorktileDeployNotifier.class);
         }
@@ -53,11 +45,11 @@ public class WorktileDeployNotifier extends Notifier {
 
         @Override
         public String getDisplayName() {
-            return "worktile deploy step";
+            return "Worktile deploy notifier";
         }
 
         @Override
-        public WorktileDeployNotifier newInstance(StaplerRequest request, JSONObject formData) {
+        public WorktileDeployNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData) {
             assert request != null;
             return request.bindJSON(WorktileDeployNotifier.class, formData);
         }
