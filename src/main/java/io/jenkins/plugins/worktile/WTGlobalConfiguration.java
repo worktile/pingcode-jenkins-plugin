@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.util.FormValidation;
-import io.jenkins.plugins.worktile.model.WTError;
+import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
@@ -100,7 +100,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         WorktileRestSession session = new WorktileRestSession(endpoint, clientId, clientSecret);
 
         try {
-            WTError err = session.doConnectTest();
+            WTErrorEntity err = session.doConnectTest();
             return err.getMessage() == null ? FormValidation.ok("Connect Worktile API Successfully")
                     : FormValidation.error(err.getMessage());
         } catch (Exception e) {

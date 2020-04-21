@@ -2,9 +2,10 @@ package io.jenkins.plugins.worktile.service;
 
 import java.io.IOException;
 
+import io.jenkins.plugins.worktile.WTEnvironment;
 import io.jenkins.plugins.worktile.WTGlobalConfiguration;
-import io.jenkins.plugins.worktile.model.BuildResult;
-import io.jenkins.plugins.worktile.model.WTError;
+import io.jenkins.plugins.worktile.model.WTBuildEntity;
+import io.jenkins.plugins.worktile.model.WTErrorEntity;
 
 public class WorktileRestSession {
     public WorktileRestSession(String endpoint, String clientId, String clientSecret) {
@@ -18,11 +19,15 @@ public class WorktileRestSession {
 
     private final WorktileRestService service;
 
-    public WTError doConnectTest() throws IOException {
+    public WTErrorEntity doConnectTest() throws IOException {
         return this.service.ping();
     }
 
-    public WTError createBuild(BuildResult result) throws IOException {
+    public WTErrorEntity createBuild(WTBuildEntity result) throws IOException {
         return this.service.createBuild(result);
+    }
+
+    public WTErrorEntity createEnvironment(WTEnvironment environment) throws IOException {
+        return this.service.createEnvironment(environment);
     }
 }

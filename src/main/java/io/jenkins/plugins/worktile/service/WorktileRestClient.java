@@ -2,13 +2,16 @@ package io.jenkins.plugins.worktile.service;
 
 import java.io.IOException;
 
-import io.jenkins.plugins.worktile.model.BuildResult;
-import io.jenkins.plugins.worktile.model.WTError;
+import io.jenkins.plugins.worktile.WTEnvironment;
+import io.jenkins.plugins.worktile.model.WTBuildEntity;
+import io.jenkins.plugins.worktile.model.WTErrorEntity;
 
 public interface WorktileRestClient {
-    WTError ping() throws IOException;
+    WTErrorEntity ping() throws IOException;
 
-    WTError createBuild(BuildResult buildResult) throws IOException;
+    WTErrorEntity createBuild(WTBuildEntity WTBuildEntity) throws IOException;
 
-    WTError createRelease() throws IOException;
+    WTErrorEntity createRelease() throws IOException;
+
+    WTErrorEntity createEnvironment(WTEnvironment environment) throws IOException;
 }

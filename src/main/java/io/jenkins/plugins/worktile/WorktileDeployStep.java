@@ -15,9 +15,20 @@ public class WorktileDeployStep extends Notifier {
 
     private String environmentName;
 
+    private boolean relatedWorkItem;
+
     @DataBoundConstructor
     public WorktileDeployStep(String envName) {
         setEnvironmentName(envName);
+    }
+
+    public boolean isRelatedWorkItem() {
+        return relatedWorkItem;
+    }
+
+    @DataBoundSetter
+    public void setRelatedWorkItem(boolean relatedWorkItem) {
+        this.relatedWorkItem = relatedWorkItem;
     }
 
     public String getEnvironmentName() {

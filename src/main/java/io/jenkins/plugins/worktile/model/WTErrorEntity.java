@@ -1,10 +1,10 @@
 package io.jenkins.plugins.worktile.model;
 
-public class WTError {
+public class WTErrorEntity {
     private String code;
     private String message;
 
-    public WTError(String code, String message) {
+    public WTErrorEntity(String code, String message) {
         setCode(code);
         setMessage(message);
     }

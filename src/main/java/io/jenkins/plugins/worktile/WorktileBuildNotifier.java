@@ -18,8 +18,8 @@ import hudson.scm.ChangeLogSet;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
-import io.jenkins.plugins.worktile.model.BuildResult;
-import io.jenkins.plugins.worktile.model.WTError;
+import io.jenkins.plugins.worktile.model.WTBuildEntity;
+import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import net.sf.json.JSONObject;
 
@@ -54,7 +54,7 @@ public class WorktileBuildNotifier extends Notifier {
     private void createBuild(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException {
         WorktileRestSession session = new WorktileRestSession();
         try {
-            WTError error = session.createBuild(this.makeResult(build, listener));
+            WTErrorEntity error = session.createBuild(this.makeResult(build, listener));
             if (error.getMessage() != null) {
                 listener.getLogger().println(error.toString());
             }
@@ -62,12 +62,11 @@ public class WorktileBuildNotifier extends Notifier {
         } catch (IOException error) {
             listener.getLogger().println("Create worktile build error " + error.getMessage());
         }
-        return;
     }
 
     @SuppressWarnings("rawtypes")
-    private BuildResult makeResult(AbstractBuild<?, ?> build, BuildListener listener) throws IOException {
-        BuildResult result = new BuildResult();
+    private WTBuildEntity makeResult(AbstractBuild<?, ?> build, BuildListener listener) throws IOException {
+        WTBuildEntity result = new WTBuildEntity();
         result.name = build.getFullDisplayName();
         result.identifier = build.getId();
         result.jobUrl = build.getProject().getAbsoluteUrl();
@@ -91,7 +90,7 @@ public class WorktileBuildNotifier extends Notifier {
         } catch (Exception error) {
             logger.info("Get $GIT_BRANCH error");
         }
-        result.workItems = WorktileUtils.getWorkItems(set.toArray(new String[set.size()]));
+        result.workItemIdentifiers = WorktileUtils.getWorkItems(set.toArray(new String[set.size()]));
 
         try {
             logger.info("start match overview " + this.getOverview());

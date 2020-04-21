@@ -2,7 +2,7 @@ package io.jenkins.plugins.worktile.model;
 
 import java.util.List;
 
-public class SCMInfo {
+public class WTScmEntity {
     private String url;
 
     private String branch;
@@ -11,7 +11,7 @@ public class SCMInfo {
 
     private List<String> blames;
 
-    public SCMInfo() {
+    public WTScmEntity() {
     }
 
     public String getUrl() {

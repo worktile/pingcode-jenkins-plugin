@@ -1,11 +1,11 @@
 package io.jenkins.plugins.worktile.model;
 
-public class WorktileToken {
+public class WTTokenEntity {
     private String accessToken;
     private String tokenType;
     private long expiresIn;
 
-    public WorktileToken(String accessToken, String tokenType, long expiresIn) {
+    public WTTokenEntity(String accessToken, String tokenType, long expiresIn) {
         setAccessToken(accessToken);
         setTokenType(tokenType);
         setExpiresIn(expiresIn);
