@@ -1,31 +1,19 @@
 package io.jenkins.plugins.worktile.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Objects;
-import java.util.logging.Logger;
-
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
 import hudson.XmlFile;
 import io.jenkins.plugins.worktile.WTEnvironment;
 import io.jenkins.plugins.worktile.WorktileUtils;
-import io.jenkins.plugins.worktile.model.WTBuildEntity;
-import io.jenkins.plugins.worktile.model.WTEnvSchema;
-import io.jenkins.plugins.worktile.model.WTErrorEntity;
-import io.jenkins.plugins.worktile.model.WTPaginationResponse;
-import io.jenkins.plugins.worktile.model.WTRestException;
-import io.jenkins.plugins.worktile.model.WTTokenEntity;
-import jenkins.model.Jenkins;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import io.jenkins.plugins.worktile.model.*;
+import okhttp3.*;
 import okhttp3.Request.Builder;
+
+import java.io.IOException;
+import java.util.Objects;
+import java.util.logging.Logger;
 
 // TODO: refact executeGet, executePost
 public class WorktileRestService implements WorktileRestClient, WorktileTokenable {
@@ -146,8 +134,20 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     @Override
-    public WTErrorEntity createRelease() throws IOException {
-        return null;
+    public boolean createDeploy(WTDeployEntity entity) throws IOException, WTRestException {
+        String path = this.getApiPath() + "/release/deploys";
+        MediaType JSON = MediaType.get("application/json; charset=utf-8");
+        String json = this.gson.toJson(entity);
+        RequestBody body = RequestBody.create(json, JSON);
+        Builder requestBuilder = new Request.Builder().url(path).post(body);
+        WTTokenEntity token = this.getToken();
+        requestBuilder.addHeader("Authorization", "Bearer " + token.getAccessToken());
+        try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
+            String responseString = response.body().string();
+            tryThrowWTRestException(responseString);
+            logger.info("create release deploy response" + responseString);
+            return true;
+        }
     }
 
     @Override

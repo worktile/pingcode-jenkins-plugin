@@ -1,14 +1,10 @@
 package io.jenkins.plugins.worktile.service;
 
-import java.io.IOException;
-
 import io.jenkins.plugins.worktile.WTEnvironment;
 import io.jenkins.plugins.worktile.WTGlobalConfiguration;
-import io.jenkins.plugins.worktile.model.WTBuildEntity;
-import io.jenkins.plugins.worktile.model.WTEnvSchema;
-import io.jenkins.plugins.worktile.model.WTErrorEntity;
-import io.jenkins.plugins.worktile.model.WTPaginationResponse;
-import io.jenkins.plugins.worktile.model.WTRestException;
+import io.jenkins.plugins.worktile.model.*;
+
+import java.io.IOException;
 
 public class WorktileRestSession {
     public WorktileRestSession(String endpoint, String clientId, String clientSecret) {
@@ -16,8 +12,11 @@ public class WorktileRestSession {
     }
 
     public WorktileRestSession() {
-        this(WTGlobalConfiguration.get().getEndpoint(), WTGlobalConfiguration.get().getClientId(),
-                WTGlobalConfiguration.get().getClientSecret());
+        this(
+            WTGlobalConfiguration.get().getEndpoint(),
+            WTGlobalConfiguration.get().getClientId(),
+            WTGlobalConfiguration.get().getClientSecret()
+        );
     }
 
     private final WorktileRestService service;
@@ -36,5 +35,9 @@ public class WorktileRestSession {
 
     public WTPaginationResponse<WTEnvSchema> listEnv() throws IOException, WTRestException {
         return this.service.listEnv();
+    }
+
+    public boolean createDeploy(WTDeployEntity entity) throws IOException, WTRestException {
+        return this.service.createDeploy(entity);
     }
 }

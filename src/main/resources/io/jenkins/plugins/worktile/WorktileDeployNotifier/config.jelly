@@ -3,7 +3,7 @@
   <f:entry title="release name" field="releaseName">
     <f:textbox />
   </f:entry>
-  <f:entry title="environments" field="environments">
+  <f:entry title="environments" field="environment">
     <f:select />
   </f:entry>
   <f:entry title="release url" field="releaseUrl">
