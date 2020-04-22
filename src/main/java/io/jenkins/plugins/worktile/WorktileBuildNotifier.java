@@ -1,20 +1,10 @@
 package io.jenkins.plugins.worktile;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
-
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.scm.ChangeLogSet;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
@@ -22,6 +12,16 @@ import io.jenkins.plugins.worktile.model.WTBuildEntity;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import net.sf.json.JSONObject;
+import org.jetbrains.annotations.NotNull;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class WorktileBuildNotifier extends Notifier {
     private static final long serialVersionUID = 699563338312232812L;
@@ -46,7 +46,7 @@ public class WorktileBuildNotifier extends Notifier {
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-            throws IOException, InternalError {
+        throws IOException, InternalError {
         this.createBuild(build, launcher, listener);
         return true;
     }
@@ -64,46 +64,36 @@ public class WorktileBuildNotifier extends Notifier {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     private WTBuildEntity makeResult(AbstractBuild<?, ?> build, BuildListener listener) throws IOException {
         WTBuildEntity result = new WTBuildEntity();
         result.name = build.getFullDisplayName();
         result.identifier = build.getId();
         result.jobUrl = build.getProject().getAbsoluteUrl();
-        result.status = build.getResult().toString().toLowerCase();
+        result.status = Objects.requireNonNull(build.getResult()).toString().toLowerCase();
         result.startAt = WorktileUtils.toSafeTs(build.getStartTimeInMillis());
         result.endAt = WorktileUtils.toSafeTs(System.currentTimeMillis());
         result.duration = build.getDuration();
-        result.resultOverview = build.getLog();
+        result.resultOverview = "";
         result.resultUrl = build.getAbsoluteUrl();
-
-        HashSet<String> set = new HashSet<>();
-        ChangeLogSet changes = build.getChangeSet();
-        for (Object change : changes) {
-            ChangeLogSet.Entry entry = (ChangeLogSet.Entry) change;
-            set.add(entry.getMsg());
-        }
-        try {
-            // Get workItems from branch name
-            String branch = build.getEnvironment(listener).get("GIT_BRANCH");
-            set.add(branch);
-        } catch (Exception error) {
-            logger.info("Get $GIT_BRANCH error");
-        }
-        result.workItemIdentifiers = WorktileUtils.getWorkItems(set.toArray(new String[set.size()]));
+        result.workItemIdentifiers = WorktileUtils.resolveWorkItems(build, listener).toArray(new String[0]);
 
         try {
             logger.info("start match overview " + this.getOverview());
-            String[] matched = WorktileUtils.getMatchSet(Pattern.compile(this.getOverview()),
-                    build.getLog().split("\n"), true, true);
-            result.resultOverview = matched.length > 0 ? matched[0] : "";
+
+            List<String> matched = WorktileUtils.getMatchSet(
+                Pattern.compile(this.getOverview()),
+                build.getLog(999),
+                true,
+                true
+            );
+
+            result.resultOverview = matched.size() > 0 ? matched.get(0) : "";
         } catch (Exception error) {
             logger.info("match overview result error" + error.getMessage());
         }
         return result;
     }
 
-    @SuppressWarnings("rawtypes")
     @Extension
     public static class Descriptor extends BuildStepDescriptor<Publisher> {
 
@@ -111,18 +101,22 @@ public class WorktileBuildNotifier extends Notifier {
             super(WorktileBuildNotifier.class);
         }
 
+        @SuppressWarnings("rawtypes")
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
 
+        @NotNull
         @Override
         public String getDisplayName() {
-            return "Worktile create build records step";
+            return "Worktile build notifier";
         }
 
         @Override
-        public WorktileBuildNotifier newInstance(StaplerRequest request, JSONObject formData) throws FormException {
+        public WorktileBuildNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData)
+            throws FormException {
+            assert request != null;
             return request.bindJSON(WorktileBuildNotifier.class, formData);
         }
     }

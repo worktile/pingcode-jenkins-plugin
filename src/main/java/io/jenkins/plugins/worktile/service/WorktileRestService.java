@@ -1,28 +1,21 @@
 package io.jenkins.plugins.worktile.service;
 
-import java.io.File;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import hudson.XmlFile;
+import io.jenkins.plugins.worktile.WTEnvironment;
+import io.jenkins.plugins.worktile.WorktileUtils;
+import io.jenkins.plugins.worktile.model.*;
+import okhttp3.*;
+import okhttp3.Request.Builder;
+
 import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import hudson.XmlFile;
-import io.jenkins.plugins.worktile.WTEnvironment;
-import io.jenkins.plugins.worktile.WorktileUtils;
-import io.jenkins.plugins.worktile.model.WTBuildEntity;
-import io.jenkins.plugins.worktile.model.WTErrorEntity;
-import io.jenkins.plugins.worktile.model.WTTokenEntity;
-import jenkins.model.Jenkins;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.Request.Builder;
-
+// TODO: refact executeGet, executePost
 public class WorktileRestService implements WorktileRestClient, WorktileTokenable {
     public static final Logger logger = Logger.getLogger(WorktileRestService.class.getName());
 
@@ -81,6 +74,29 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
         return this.executePost(path, environment, true);
     }
 
+    @Override
+    public WTPaginationResponse<WTEnvSchema> listEnv() throws IOException, WTRestException {
+        String path = this.getApiPath() + "/release/environments?page_index=0&page_size=100";
+
+        Builder requestBuilder = new Request.Builder().url(path);
+        WTTokenEntity token = this.getToken();
+        requestBuilder.addHeader("Authorization", "Bearer " + token.getAccessToken());
+
+        try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
+            String jsonString = Objects.requireNonNull(response.body()).string();
+            tryThrowWTRestException(jsonString);
+            return this.gson.fromJson(jsonString, new TypeToken<WTPaginationResponse<WTEnvSchema>>() {
+            }.getType());
+        }
+    }
+
+    private void tryThrowWTRestException(String json) throws WTRestException {
+        WTErrorEntity error = gson.fromJson(json, WTErrorEntity.class);
+        if (error.getCode() != null && error.getMessage() != null) {
+            throw new WTRestException(error);
+        }
+    }
+
     private WTErrorEntity executePost(String url, Object tClass, boolean requiredToken) throws IOException {
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         String json = this.gson.toJson(tClass);
@@ -118,8 +134,20 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     @Override
-    public WTErrorEntity createRelease() throws IOException {
-        return null;
+    public boolean createDeploy(WTDeployEntity entity) throws IOException, WTRestException {
+        String path = this.getApiPath() + "/release/deploys";
+        MediaType JSON = MediaType.get("application/json; charset=utf-8");
+        String json = this.gson.toJson(entity);
+        RequestBody body = RequestBody.create(json, JSON);
+        Builder requestBuilder = new Request.Builder().url(path).post(body);
+        WTTokenEntity token = this.getToken();
+        requestBuilder.addHeader("Authorization", "Bearer " + token.getAccessToken());
+        try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
+            String responseString = response.body().string();
+            tryThrowWTRestException(responseString);
+            logger.info("create release deploy response" + responseString);
+            return true;
+        }
     }
 
     @Override
@@ -138,7 +166,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
 
     @Override
     public void saveToken(WTTokenEntity token) throws IOException {
-        XmlFile file = getConfigFile();
+        XmlFile file = getTokenConfigFile();
         try {
             file.write(token);
         } catch (Exception e) {
@@ -155,7 +183,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     private WTTokenEntity getTokenFromDisk() throws IOException {
-        XmlFile file = getConfigFile();
+        XmlFile file = getTokenConfigFile();
         if (!file.exists()) {
             logger.warning("worktile token file not found");
             return null;
@@ -175,8 +203,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
         return token;
     }
 
-    private XmlFile getConfigFile() {
-        File file = new File(Objects.requireNonNull(Jenkins.getInstanceOrNull()).getRootDir(), "worktile.token.xml");
-        return new XmlFile(file);
+    private XmlFile getTokenConfigFile() {
+        return WorktileUtils.getTokenXmlFile();
     }
 }

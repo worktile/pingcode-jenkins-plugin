@@ -73,6 +73,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         setClientId(clientId);
         setClientSecret(clientSecret);
         save();
+        WorktileUtils.RemoveTokenFile();
         return true;
     }
 
