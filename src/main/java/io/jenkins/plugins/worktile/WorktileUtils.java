@@ -1,11 +1,16 @@
 package io.jenkins.plugins.worktile;
 
+import java.io.File;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
+
+import hudson.XmlFile;
+import jenkins.model.Jenkins;
 
 public class WorktileUtils {
 
@@ -61,5 +66,15 @@ public class WorktileUtils {
 
     public static boolean isExpired(long future) {
         return toSafeTs(System.currentTimeMillis()) > future;
+    }
+
+    public static XmlFile getTokenXmlFile() {
+        File file = new File(Objects.requireNonNull(Jenkins.getInstanceOrNull()).getRootDir(), "worktile.token.xml");
+        return new XmlFile(file);
+    }
+
+    public static void RemoveTokenFile() {
+        File file = new File(Objects.requireNonNull(Jenkins.getInstanceOrNull()).getRootDir(), "worktile.token.xml");
+        file.delete();
     }
 }

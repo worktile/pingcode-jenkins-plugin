@@ -20,7 +20,7 @@ public class WTProjectProperty extends JobProperty<Job<?, ?>> {
     private String htmlUrl;
 
     @DataBoundConstructor
-    public WTProjectProperty(String name, String htmlUrl) {
+    public WTProjectProperty(final String name, final String htmlUrl) {
         setName(name);
         setHtmlUrl(htmlUrl);
     }
@@ -29,7 +29,7 @@ public class WTProjectProperty extends JobProperty<Job<?, ?>> {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -38,7 +38,7 @@ public class WTProjectProperty extends JobProperty<Job<?, ?>> {
     }
 
     @DataBoundSetter
-    public void setHtmlUrl(String htmlUrl) {
+    public void setHtmlUrl(final String htmlUrl) {
         this.htmlUrl = htmlUrl;
     }
 
@@ -47,7 +47,7 @@ public class WTProjectProperty extends JobProperty<Job<?, ?>> {
         public final Logger logger = Logger.getLogger(WTProjectProperty.class.getName());
 
         @Override
-        public boolean isApplicable(Class<? extends Job> jobType) {
+        public boolean isApplicable(final Class<? extends Job> jobType) {
             return true;
         }
 
@@ -58,18 +58,17 @@ public class WTProjectProperty extends JobProperty<Job<?, ?>> {
         }
 
         public FormValidation doSyncEnv(@QueryParameter(value = "name", fixEmpty = true) String name,
-                @QueryParameter(value = "htmlUrl", fixEmpty = true) String htmlUrl) {
+                @QueryParameter(value = "htmlUrl", fixEmpty = true) final String htmlUrl) {
             if (WorktileUtils.isBlank(name)) {
                 return FormValidation.error("name can't not be empty");
             }
-            WTEnvironment env = new WTEnvironment(name, htmlUrl);
-            WorktileRestSession session = new WorktileRestSession();
-
+            final WTEnvironment env = new WTEnvironment(name, htmlUrl);
+            final WorktileRestSession session = new WorktileRestSession();
             try {
-                WTErrorEntity error = session.createEnvironment(env);
+                final WTErrorEntity error = session.createEnvironment(env);
                 return error.getMessage() == null ? FormValidation.ok("Sync environment ok")
                         : FormValidation.error(error.getMessage());
-            } catch (IOException error) {
+            } catch (final IOException error) {
                 return FormValidation.error("Sync environment error " + error.getMessage());
             }
         }

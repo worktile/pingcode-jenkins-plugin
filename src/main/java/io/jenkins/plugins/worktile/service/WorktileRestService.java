@@ -138,7 +138,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
 
     @Override
     public void saveToken(WTTokenEntity token) throws IOException {
-        XmlFile file = getConfigFile();
+        XmlFile file = getTokenConfigFile();
         try {
             file.write(token);
         } catch (Exception e) {
@@ -155,7 +155,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     }
 
     private WTTokenEntity getTokenFromDisk() throws IOException {
-        XmlFile file = getConfigFile();
+        XmlFile file = getTokenConfigFile();
         if (!file.exists()) {
             logger.warning("worktile token file not found");
             return null;
@@ -175,8 +175,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
         return token;
     }
 
-    private XmlFile getConfigFile() {
-        File file = new File(Objects.requireNonNull(Jenkins.getInstanceOrNull()).getRootDir(), "worktile.token.xml");
-        return new XmlFile(file);
+    private XmlFile getTokenConfigFile() {
+        return WorktileUtils.getTokenXmlFile();
     }
 }
