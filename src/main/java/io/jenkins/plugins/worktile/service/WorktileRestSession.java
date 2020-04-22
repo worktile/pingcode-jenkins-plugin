@@ -5,7 +5,10 @@ import java.io.IOException;
 import io.jenkins.plugins.worktile.WTEnvironment;
 import io.jenkins.plugins.worktile.WTGlobalConfiguration;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
+import io.jenkins.plugins.worktile.model.WTEnvSchema;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
+import io.jenkins.plugins.worktile.model.WTPaginationResponse;
+import io.jenkins.plugins.worktile.model.WTRestException;
 
 public class WorktileRestSession {
     public WorktileRestSession(String endpoint, String clientId, String clientSecret) {
@@ -29,5 +32,9 @@ public class WorktileRestSession {
 
     public WTErrorEntity createEnvironment(WTEnvironment environment) throws IOException {
         return this.service.createEnvironment(environment);
+    }
+
+    public WTPaginationResponse<WTEnvSchema> listEnv() throws IOException, WTRestException {
+        return this.service.listEnv();
     }
 }

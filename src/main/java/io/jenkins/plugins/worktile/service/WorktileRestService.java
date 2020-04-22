@@ -8,12 +8,16 @@ import java.util.logging.Logger;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import hudson.XmlFile;
 import io.jenkins.plugins.worktile.WTEnvironment;
 import io.jenkins.plugins.worktile.WorktileUtils;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
+import io.jenkins.plugins.worktile.model.WTEnvSchema;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
+import io.jenkins.plugins.worktile.model.WTPaginationResponse;
+import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.model.WTTokenEntity;
 import jenkins.model.Jenkins;
 import okhttp3.MediaType;
@@ -23,6 +27,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.Request.Builder;
 
+// TODO: refact executeGet, executePost
 public class WorktileRestService implements WorktileRestClient, WorktileTokenable {
     public static final Logger logger = Logger.getLogger(WorktileRestService.class.getName());
 
@@ -79,6 +84,29 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     public WTErrorEntity createEnvironment(WTEnvironment environment) throws IOException {
         String path = this.getApiPath() + "/release/environments";
         return this.executePost(path, environment, true);
+    }
+
+    @Override
+    public WTPaginationResponse<WTEnvSchema> listEnv() throws IOException, WTRestException {
+        String path = this.getApiPath() + "/release/environments?page_index=0&page_size=100";
+
+        Builder requestBuilder = new Request.Builder().url(path);
+        WTTokenEntity token = this.getToken();
+        requestBuilder.addHeader("Authorization", "Bearer " + token.getAccessToken());
+
+        try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
+            String jsonString = Objects.requireNonNull(response.body()).string();
+            tryThrowWTRestException(jsonString);
+            return this.gson.fromJson(jsonString, new TypeToken<WTPaginationResponse<WTEnvSchema>>() {
+            }.getType());
+        }
+    }
+
+    private void tryThrowWTRestException(String json) throws WTRestException {
+        WTErrorEntity error = gson.fromJson(json, WTErrorEntity.class);
+        if (error.getCode() != null && error.getMessage() != null) {
+            throw new WTRestException(error);
+        }
     }
 
     private WTErrorEntity executePost(String url, Object tClass, boolean requiredToken) throws IOException {

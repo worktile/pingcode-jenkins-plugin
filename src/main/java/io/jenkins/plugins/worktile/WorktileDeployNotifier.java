@@ -7,6 +7,10 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import io.jenkins.plugins.worktile.model.WTEnvSchema;
+import io.jenkins.plugins.worktile.model.WTPaginationResponse;
+import io.jenkins.plugins.worktile.model.WTRestException;
+import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import net.sf.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -14,10 +18,13 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class WorktileDeployNotifier extends Notifier {
+    public static final Logger logger = Logger.getLogger(WorktileDeployNotifier.class.getName());
 
     private List<String> environments;
 
@@ -91,7 +98,17 @@ public class WorktileDeployNotifier extends Notifier {
 
         public ListBoxModel doFillEnvironmentsItems() {
             final ListBoxModel items = new ListBoxModel();
-            items.add("hello", "world");
+            WorktileRestSession session = new WorktileRestSession();
+            try {
+                WTPaginationResponse<WTEnvSchema> schemas = session.listEnv();
+                for (WTEnvSchema schema : schemas.values) {
+                    items.add(schema.name, schema.id);
+                }
+            } catch (IOException exception) {
+                WorktileDeployNotifier.logger.info(exception.getMessage());
+            } catch (WTRestException exception) {
+                WorktileDeployNotifier.logger.info(exception.getMessage());
+            }
             return items;
         }
     }
