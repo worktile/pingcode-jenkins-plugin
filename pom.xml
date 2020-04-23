@@ -9,10 +9,13 @@
   </parent>
 
   <groupId>io.jenkins.plugins</groupId>
-  <artifactId>WorktileAssistant</artifactId>
+  <artifactId>worktile-assistant</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Jenkins Worktile Assistant Plugin</name>
+  <description>
+    This plugin provides some functions for interacting with worktile Open API.
+  </description>
 
   <properties>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
