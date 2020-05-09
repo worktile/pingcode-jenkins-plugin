@@ -1,28 +1,20 @@
 package io.jenkins.plugins.worktile;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringSubstitutor;
-import org.apache.oro.text.regex.StringSubstitution;
-import org.codehaus.groovy.runtime.metaclass.MetaMethodIndex.EntryIterator;
-
-import hudson.BulkChange;
 import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class WorktileUtils {
 
