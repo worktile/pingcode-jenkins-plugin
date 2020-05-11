@@ -74,7 +74,7 @@ public class WorktileBuildNotifier extends Notifier {
         result.endAt = WorktileUtils.toSafeTs(System.currentTimeMillis());
         result.duration = build.getDuration();
         result.resultOverview = "";
-        result.resultUrl = build.getAbsoluteUrl();
+        result.resultUrl = build.getProject().getAbsoluteUrl() + build.getNumber() + "/console";
         result.workItemIdentifiers = WorktileUtils.resolveWorkItems(build, listener).toArray(new String[0]);
 
         try {

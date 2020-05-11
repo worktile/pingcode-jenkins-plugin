@@ -1,16 +1,19 @@
 package io.jenkins.plugins.worktile;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 import org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper;
+import org.jetbrains.annotations.NotNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -26,9 +29,21 @@ public class WTSendBuildStep extends Step implements Serializable {
 
     private String reviewPattern;
 
+    private String buildResult;
+
     @DataBoundConstructor
     public WTSendBuildStep(String reviewPattern) {
         setReviewPattern(reviewPattern);
+    }
+
+    public String getBuildResult() {
+        return buildResult;
+    }
+
+    @NotNull
+    @DataBoundSetter
+    public void setBuildResult(String buildResult) {
+        this.buildResult = buildResult;
     }
 
     public String getReviewPattern() {
@@ -47,27 +62,15 @@ public class WTSendBuildStep extends Step implements Serializable {
 
     public static class WTSendBuildStepExecution extends SynchronousNonBlockingStepExecution<Boolean> {
         private static final long serialVersionUID = 1L;
-
-        private final WTSendBuildStep buildStep;
+        private final WTSendBuildStep step;
 
         public WTSendBuildStepExecution(StepContext context, WTSendBuildStep step) {
             super(context);
-            this.buildStep = step;
+            this.step = step;
         }
 
         @Override
         public Boolean run() throws Exception {
-            final TaskListener listener = getContext().get(TaskListener.class);
-            final Run<?, ?> run = getContext().get(Run.class);
-
-            WTLogger logger = new WTLogger(listener);
-            Result buildResult = run.getResult();
-            String result = buildResult != null ? buildResult.toString() : buildResult.SUCCESS.toString();
-
-            RunWrapper wrapper = new RunWrapper(run, true);
-
-            logger.info("build result => " + wrapper.getCurrentResult());
-            logger.info("reviewPattern => " + this.buildStep.reviewPattern);
             return true;
         }
     }
@@ -84,6 +87,7 @@ public class WTSendBuildStep extends Step implements Serializable {
             return "wtSendBuild";
         }
 
+        @NotNull
         public String getDisplayName() {
             return "send build result to worktile";
         }
