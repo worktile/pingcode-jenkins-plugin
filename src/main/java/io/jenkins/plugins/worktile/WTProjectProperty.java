@@ -57,7 +57,7 @@ public class WTProjectProperty extends JobProperty<Job<?, ?>> {
             return "Worktile environment sync";
         }
 
-        public FormValidation doSyncEnv(@QueryParameter(value = "name", fixEmpty = true) String name,
+        public FormValidation doSyncEnv(@QueryParameter(value = "name", fixEmpty = true) final String name,
                 @QueryParameter(value = "htmlUrl", fixEmpty = true) final String htmlUrl) {
             if (WorktileUtils.isBlank(name)) {
                 return FormValidation.error("name can't not be empty");

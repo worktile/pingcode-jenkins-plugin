@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class WorktileBuildNotifier extends Notifier {
-    private static final long serialVersionUID = 699563338312232812L;
+    private static final long serialVersionUID = 1L;
 
     public static final Logger logger = Logger.getLogger(WorktileBuildNotifier.class.getName());
 
@@ -46,7 +46,7 @@ public class WorktileBuildNotifier extends Notifier {
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-        throws IOException, InternalError {
+            throws IOException, InternalError {
         this.createBuild(build, launcher, listener);
         return true;
     }
@@ -74,18 +74,14 @@ public class WorktileBuildNotifier extends Notifier {
         result.endAt = WorktileUtils.toSafeTs(System.currentTimeMillis());
         result.duration = build.getDuration();
         result.resultOverview = "";
-        result.resultUrl = build.getAbsoluteUrl();
+        result.resultUrl = build.getProject().getAbsoluteUrl() + build.getNumber() + "/console";
         result.workItemIdentifiers = WorktileUtils.resolveWorkItems(build, listener).toArray(new String[0]);
 
         try {
             logger.info("start match overview " + this.getOverview());
 
-            List<String> matched = WorktileUtils.getMatchSet(
-                Pattern.compile(this.getOverview()),
-                build.getLog(999),
-                true,
-                true
-            );
+            List<String> matched = WorktileUtils.getMatchSet(Pattern.compile(this.getOverview()), build.getLog(999),
+                    true, true);
 
             result.resultOverview = matched.size() > 0 ? matched.get(0) : "";
         } catch (Exception error) {
@@ -115,7 +111,7 @@ public class WorktileBuildNotifier extends Notifier {
 
         @Override
         public WorktileBuildNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData)
-            throws FormException {
+                throws FormException {
             assert request != null;
             return request.bindJSON(WorktileBuildNotifier.class, formData);
         }
