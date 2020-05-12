@@ -2,12 +2,14 @@ package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 import hudson.Extension;
 import hudson.Util;
+import hudson.model.Descriptor;
 import hudson.util.FormValidation;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
@@ -81,8 +83,8 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
     public WTGlobalConfiguration() {
         load();
-        List<WTEnvConfig> configs = new ArrayList<>();
-        configs.add(new WTEnvConfig("development", "https://www.baidu.com"));
+        this.envConfigs = new ArrayList<>();
+        this.envConfigs.add(new WTEnvConfig("development", "https://www.baidu.com"));
     }
 
     @Override

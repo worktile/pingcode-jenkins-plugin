@@ -1,6 +1,8 @@
 package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
@@ -54,16 +56,17 @@ public class WTEnvConfig extends AbstractDescribableImpl<WTEnvConfig> {
         @Nonnull
         @Override
         public String getDisplayName() {
-            return "deploy environments management";
+            return "add worktile deploy environment";
         }
 
         public FormValidation doSave(@QueryParameter(value = "name", fixEmpty = true) String name,
                 @QueryParameter(value = "htmlUrl", fixEmpty = true) String htmlUrl) {
-
             if (WorktileUtils.isBlank(name)) {
                 return FormValidation.error("name can't not be empty");
             }
+
             final WTEnvironment env = new WTEnvironment(name, htmlUrl);
+
             try {
                 final WorktileRestSession session = new WorktileRestSession();
                 final WTErrorEntity error = session.createEnvironment(env);

@@ -16,14 +16,10 @@
   </f:section>
 
   <f:advanced>
-    <f:entry title="deploy environments management">
-      <f:repeatableProperty add="添加环境" field="envConfigs">
-        <f:entry title="">
-          <div align="left">
-            <f:repeatableDeleteButton />
-          </div>
-        </f:entry>
-      </f:repeatableProperty>
+    <f:entry title="deploy environments">
+      <f:repeatableHeteroProperty field="envConfigs" items="${it.envConfigs}" hasHeader="true" addCaption="add environmnts">
+        <f:repeatableDeleteButton />
+      </f:repeatableHeteroProperty>
     </f:entry>
   </f:advanced>
 </j:jelly>
