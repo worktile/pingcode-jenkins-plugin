@@ -1,6 +1,7 @@
 package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -80,6 +81,8 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
     public WTGlobalConfiguration() {
         load();
+        List<WTEnvConfig> configs = new ArrayList<>();
+        configs.add(new WTEnvConfig("development", "https://www.baidu.com"));
     }
 
     @Override
