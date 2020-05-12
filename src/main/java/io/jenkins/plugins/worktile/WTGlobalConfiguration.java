@@ -1,6 +1,7 @@
 package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
@@ -26,8 +27,28 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     private String clientId;
     private String clientSecret;
 
+    private transient WTEnvConfig evnConfig;
+    private List<WTEnvConfig> envConfigs;
+
     public String getDefaultEndpoint() {
         return WTGlobalConfiguration.DEFAULT_ENDPOINT;
+    }
+
+    public List<WTEnvConfig> getEnvConfigs() {
+        return envConfigs;
+    }
+
+    @DataBoundSetter
+    public void setEnvConfigs(List<WTEnvConfig> envConfigs) {
+        this.envConfigs = envConfigs;
+    }
+
+    public WTEnvConfig getEvnConfig() {
+        return evnConfig;
+    }
+
+    public void setEvnConfig(WTEnvConfig evnConfig) {
+        this.evnConfig = evnConfig;
     }
 
     @DataBoundSetter

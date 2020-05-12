@@ -14,4 +14,18 @@
       <f:validateButton title="TestConnection" method="testConnection" with="endpoint,clientId,clientSecret" />
     </f:entry>
   </f:section>
+
+  <f:advanced>
+
+    <f:entry title="worktile env manament">
+      <f:repeatableProperty add="添加环境" field="envConfigs">
+        <f:entry title="">
+          <div align="right">
+            <f:repeatableDeleteButton />
+          </div>
+        </f:entry>
+      </f:repeatableProperty>
+    </f:entry>
+
+  </f:advanced>
 </j:jelly>
