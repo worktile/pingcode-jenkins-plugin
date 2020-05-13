@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import hudson.XmlFile;
-import io.jenkins.plugins.worktile.TokenResolver;
+
 import io.jenkins.plugins.worktile.WTEnvironment;
 import io.jenkins.plugins.worktile.WorktileUtils;
 import io.jenkins.plugins.worktile.client.ApiConnection;

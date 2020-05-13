@@ -2,7 +2,6 @@ package io.jenkins.plugins.worktile.service;
 
 import java.io.IOException;
 
-import io.jenkins.plugins.worktile.TokenResolver;
 import io.jenkins.plugins.worktile.WTGlobalConfiguration;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
 import io.jenkins.plugins.worktile.model.WTDeployEntity;
@@ -11,6 +10,7 @@ import io.jenkins.plugins.worktile.model.WTEnvSchema;
 import io.jenkins.plugins.worktile.model.WTPaginationResponse;
 import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.model.WTTokenEntity;
+import io.jenkins.plugins.worktile.resolver.TokenResolver;
 
 public class WorktileRestSession {
     private final WorktileRestService service;

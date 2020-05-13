@@ -1,4 +1,4 @@
-package io.jenkins.plugins.worktile;
+package io.jenkins.plugins.worktile.resolver;
 
 import java.util.Collections;
 import java.util.List;

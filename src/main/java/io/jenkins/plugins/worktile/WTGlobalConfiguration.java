@@ -27,6 +27,7 @@ import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.model.WTPaginationResponse;
 import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.model.WTTokenEntity;
+import io.jenkins.plugins.worktile.resolver.SecretResolver;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;

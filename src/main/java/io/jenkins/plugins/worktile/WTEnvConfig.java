@@ -84,8 +84,8 @@ public class WTEnvConfig extends AbstractDescribableImpl<WTEnvConfig> {
 
             try {
                 final WorktileRestSession session = new WorktileRestSession();
-                final WTEnvSchema error = session.createEnvironment(env);
-                return FormValidation.ok("save environment ok");
+                final WTEnvSchema schema = session.createEnvironment(env);
+                return FormValidation.ok(String.format("save environment %s ok", schema.name));
             } catch (Exception error) {
                 return FormValidation.error("save environment error " + error.getMessage());
             }
