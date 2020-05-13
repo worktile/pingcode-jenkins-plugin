@@ -76,15 +76,13 @@ public class WorktileDeployNotifier extends Notifier {
     private void performCreateDeploy(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
         WorktileRestSession session = new WorktileRestSession();
         try {
-            boolean result = session.createDeploy(makeEntity(build, listener));
-            if(result) listener.getLogger().println("create deploy successfully");
-            else listener.getLogger().println("create deploy failure");
+            session.createDeploy(makeEntity(build, listener));
         } catch (Exception error) {
             listener.getLogger().println("create deploy failure " + error.getMessage());
         }
     }
 
-    private  WTDeployEntity makeEntity(AbstractBuild<?, ?> build, BuildListener listener) {
+    private WTDeployEntity makeEntity(AbstractBuild<?, ?> build, BuildListener listener) {
         WTDeployEntity entity = new WTDeployEntity();
         entity.releaseName = WorktileUtils.renderTemplateString(getReleaseName(), build);
         entity.releaseUrl = getReleaseUrl();
@@ -133,7 +131,7 @@ public class WorktileDeployNotifier extends Notifier {
             final ListBoxModel items = new ListBoxModel();
             WorktileRestSession session = new WorktileRestSession();
             try {
-                WTPaginationResponse<WTEnvSchema> schemas = session.listEnv();
+                WTPaginationResponse<WTEnvSchema> schemas = session.listEnvironments();
                 for (WTEnvSchema schema : schemas.values) {
                     items.add(schema.name, schema.id);
                 }

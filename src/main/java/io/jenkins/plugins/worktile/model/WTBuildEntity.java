@@ -12,10 +12,4 @@ public class WTBuildEntity {
     public long endAt;
     public long duration;
     public final String provider = "jenkins";
-
-    public String toString() {
-        return String.format(
-                "name:%s\nid:%s\njobUrl:%s\n,overview:%s\nresultUrl:%s,status:%s,start:%d,end:%d,duration:%d,provider:%s",
-                name, identifier, jobUrl, resultOverview, resultUrl, status, startAt, endAt, duration, provider);
-    }
 }

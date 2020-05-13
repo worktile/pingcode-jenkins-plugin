@@ -54,12 +54,9 @@ public class WorktileBuildNotifier extends Notifier {
     private void createBuild(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException {
         WorktileRestSession session = new WorktileRestSession();
         try {
-            WTErrorEntity error = session.createBuild(this.makeResult(build, listener));
-            if (error.getMessage() != null) {
-                listener.getLogger().println(error.toString());
-            }
+            session.createBuild(this.makeResult(build, listener));
             listener.getLogger().println("Send build data to worktile open api");
-        } catch (IOException error) {
+        } catch (Exception error) {
             listener.getLogger().println("Create worktile build error " + error.getMessage());
         }
     }
@@ -79,7 +76,6 @@ public class WorktileBuildNotifier extends Notifier {
 
         try {
             logger.info("start match overview " + this.getOverview());
-
             List<String> matched = WorktileUtils.getMatchSet(Pattern.compile(this.getOverview()), build.getLog(999),
                     true, true);
 

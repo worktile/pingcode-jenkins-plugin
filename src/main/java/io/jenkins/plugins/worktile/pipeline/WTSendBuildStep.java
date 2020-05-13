@@ -126,10 +126,7 @@ public class WTSendBuildStep extends Step implements Serializable {
 
             WorktileRestSession session = new WorktileRestSession();
             try {
-                WTErrorEntity error = session.createBuild(buildEntity);
-                if (error != null) {
-                    logger.info("save build error " + "code: " + error.getCode() + " message: " + error.getMessage());
-                }
+                session.createBuild(buildEntity);
             } catch (Exception exception) {
                 logger.info(exception.getMessage());
             }

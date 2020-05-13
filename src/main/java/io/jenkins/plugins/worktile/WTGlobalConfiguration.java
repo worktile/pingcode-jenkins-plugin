@@ -26,6 +26,7 @@ import io.jenkins.plugins.worktile.model.WTEnvSchema;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.model.WTPaginationResponse;
 import io.jenkins.plugins.worktile.model.WTRestException;
+import io.jenkins.plugins.worktile.model.WTTokenEntity;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
@@ -102,7 +103,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         }
         WorktileRestSession session = new WorktileRestSession(endpoint, clientId, secret.get());
         Set<String> apiSet = new HashSet<String>();
-        WTPaginationResponse<WTEnvSchema> schemas = session.listEnv();
+        WTPaginationResponse<WTEnvSchema> schemas = session.listEnvironments();
         for (WTEnvSchema schema : schemas.values) {
             logger.info(String.format("name=%s", schema.name));
             apiSet.add(schema.id);
@@ -119,7 +120,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
         String[] ids = set.toArray(new String[0]);
         for (String id : ids) {
-            WTEnvSchema deleteSchema = session.deleteEnv(id);
+            WTEnvSchema deleteSchema = session.deleteEnvironment(id);
             logger.info("delete env" + deleteSchema.htmlUrl + deleteSchema.id);
         }
     }
@@ -173,9 +174,9 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         WorktileRestSession session = new WorktileRestSession(endpoint, clientId, secret.get());
 
         try {
-            WTErrorEntity err = session.doConnectTest();
+            WTTokenEntity token = session.doConnectTest();
             try {
-                WTPaginationResponse<WTEnvSchema> schemas = session.listEnv();
+                WTPaginationResponse<WTEnvSchema> schemas = session.listEnvironments();
                 for (WTEnvSchema schema : schemas.values) {
                     logger.info(String.format("name=%s", schema.name));
                     envConfigs.add(new WTEnvConfig(schema.id, schema.name, schema.htmlUrl));
@@ -183,11 +184,8 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             } catch (Exception exception) {
                 logger.warning("get env list error = " + exception.getMessage());
             }
-            if (err.getMessage() == null) {
-                save();
-                return FormValidation.ok("Connect Worktile API Successfully");
-            }
-            return FormValidation.error(err.getMessage());
+
+            return FormValidation.ok("Connect worktile API successfully");
         } catch (Exception e) {
             WTGlobalConfiguration.logger.warning("test connect error");
             return FormValidation.error("Connect Worktile API Error, err : " + e.getMessage());

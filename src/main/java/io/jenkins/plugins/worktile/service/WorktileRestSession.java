@@ -1,14 +1,25 @@
 package io.jenkins.plugins.worktile.service;
 
-import io.jenkins.plugins.worktile.WTEnvironment;
-import io.jenkins.plugins.worktile.WTGlobalConfiguration;
-import io.jenkins.plugins.worktile.model.*;
-
 import java.io.IOException;
 
+import io.jenkins.plugins.worktile.TokenResolver;
+import io.jenkins.plugins.worktile.WTGlobalConfiguration;
+import io.jenkins.plugins.worktile.model.WTBuildEntity;
+import io.jenkins.plugins.worktile.model.WTDeployEntity;
+import io.jenkins.plugins.worktile.model.WTEnvEntity;
+import io.jenkins.plugins.worktile.model.WTEnvSchema;
+import io.jenkins.plugins.worktile.model.WTPaginationResponse;
+import io.jenkins.plugins.worktile.model.WTRestException;
+import io.jenkins.plugins.worktile.model.WTTokenEntity;
+
 public class WorktileRestSession {
+    private final WorktileRestService service;
+
+    private final TokenResolver tokenResolver;
+
     public WorktileRestSession(String endpoint, String clientId, String clientSecret) {
         this.service = new WorktileRestService(endpoint, clientId, clientSecret);
+        this.tokenResolver = new TokenResolver(endpoint, clientId, clientSecret);
     }
 
     public WorktileRestSession() {
@@ -16,29 +27,27 @@ public class WorktileRestSession {
                 WTGlobalConfiguration.get().getClientSecret());
     }
 
-    private final WorktileRestService service;
-
-    public WTErrorEntity doConnectTest() throws IOException {
-        return this.service.ping();
+    public WTTokenEntity doConnectTest() throws IOException, WTRestException {
+        return tokenResolver.resolveToken();
     }
 
-    public WTErrorEntity createBuild(WTBuildEntity result) throws IOException {
-        return this.service.createBuild(result);
+    public Object createBuild(WTBuildEntity entity) throws IOException, WTRestException {
+        return this.service.createBuild(entity);
     }
 
-    public WTErrorEntity createEnvironment(WTEnvironment environment) throws IOException {
-        return this.service.createEnvironment(environment);
-    }
-
-    public WTPaginationResponse<WTEnvSchema> listEnv() throws IOException, WTRestException {
-        return this.service.listEnv();
-    }
-
-    public WTEnvSchema deleteEnv(String id) throws IOException, WTRestException {
-        return this.service.deleteEnv(id);
-    }
-
-    public boolean createDeploy(WTDeployEntity entity) throws IOException, WTRestException {
+    public Object createDeploy(WTDeployEntity entity) throws IOException, WTRestException {
         return this.service.createDeploy(entity);
+    }
+
+    public WTPaginationResponse<WTEnvSchema> listEnvironments() throws IOException, WTRestException {
+        return this.service.listEnvironments();
+    }
+
+    public WTEnvSchema deleteEnvironment(String id) throws IOException, WTRestException {
+        return this.service.deleteEnvironment(id);
+    }
+
+    public WTEnvSchema createEnvironment(WTEnvEntity entity) throws IOException, WTRestException {
+        return this.service.createEnvironment(entity);
     }
 }

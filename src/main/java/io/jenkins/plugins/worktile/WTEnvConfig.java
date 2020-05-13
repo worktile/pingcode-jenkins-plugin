@@ -15,6 +15,8 @@ import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
+import io.jenkins.plugins.worktile.model.WTEnvEntity;
+import io.jenkins.plugins.worktile.model.WTEnvSchema;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 
@@ -78,13 +80,12 @@ public class WTEnvConfig extends AbstractDescribableImpl<WTEnvConfig> {
                 return FormValidation.error("name can't not be empty");
             }
 
-            final WTEnvironment env = new WTEnvironment(name, htmlUrl);
+            final WTEnvEntity env = new WTEnvEntity(name, htmlUrl);
 
             try {
                 final WorktileRestSession session = new WorktileRestSession();
-                final WTErrorEntity error = session.createEnvironment(env);
-                return error.getMessage() == null ? FormValidation.ok("save environment ok")
-                        : FormValidation.error(error.getMessage());
+                final WTEnvSchema error = session.createEnvironment(env);
+                return FormValidation.ok("save environment ok");
             } catch (Exception error) {
                 return FormValidation.error("save environment error " + error.getMessage());
             }

@@ -5,6 +5,8 @@ import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.util.FormValidation;
+import io.jenkins.plugins.worktile.model.WTEnvEntity;
+import io.jenkins.plugins.worktile.model.WTEnvSchema;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -62,13 +64,12 @@ public class WTProjectProperty extends JobProperty<Job<?, ?>> {
             if (WorktileUtils.isBlank(name)) {
                 return FormValidation.error("name can't not be empty");
             }
-            final WTEnvironment env = new WTEnvironment(name, htmlUrl);
+            final WTEnvEntity env = new WTEnvEntity(name, htmlUrl);
             final WorktileRestSession session = new WorktileRestSession();
             try {
-                final WTErrorEntity error = session.createEnvironment(env);
-                return error.getMessage() == null ? FormValidation.ok("Sync environment ok")
-                        : FormValidation.error(error.getMessage());
-            } catch (final IOException error) {
+                WTEnvSchema envSchema = session.createEnvironment(env);
+                return FormValidation.ok(String.format("create %s successfully", envSchema.name));
+            } catch (final Exception error) {
                 return FormValidation.error("Sync environment error " + error.getMessage());
             }
         }
