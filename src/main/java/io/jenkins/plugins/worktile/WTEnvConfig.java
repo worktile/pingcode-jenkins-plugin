@@ -20,16 +20,29 @@ import io.jenkins.plugins.worktile.service.WorktileRestSession;
 
 public class WTEnvConfig extends AbstractDescribableImpl<WTEnvConfig> {
 
-    private static final Logger logger = Logger.getLogger(WTEnvConfig.class.getName());
-
     private String name;
 
     private String htmlUrl;
 
-    @DataBoundConstructor
-    public WTEnvConfig(String name, String htmlUrl) {
+    private String id;
+
+    public WTEnvConfig(String id, String name, String htmlUrl) {
+        setId(id);
         setName(name);
         setHtmlUrl(htmlUrl);
+    }
+
+    @DataBoundConstructor
+    public WTEnvConfig(String name, String htmlUrl) {
+        this(null, name, htmlUrl);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {

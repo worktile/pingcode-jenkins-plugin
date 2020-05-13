@@ -21,7 +21,6 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
 
     private final String verPrefix = "v1";
     private OkHttpClient httpClient;
-    private WTTokenEntity token;
 
     private final String ApiPath;
 
@@ -64,7 +63,6 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     @Override
     public WTErrorEntity createBuild(WTBuildEntity entity) throws IOException {
         String path = this.getApiPath() + "/build/builds";
-        // String path = "https://request.worktile.com/cjynOjmRG";
         return this.executePost(path, entity, true);
     }
 
@@ -77,16 +75,19 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
     @Override
     public WTPaginationResponse<WTEnvSchema> listEnv() throws IOException, WTRestException {
         String path = this.getApiPath() + "/release/environments?page_index=0&page_size=100";
-
         Builder requestBuilder = new Request.Builder().url(path);
         WTTokenEntity token = this.getToken();
         requestBuilder.addHeader("Authorization", "Bearer " + token.getAccessToken());
-
         try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
             String jsonString = Objects.requireNonNull(response.body()).string();
-            tryThrowWTRestException(jsonString);
-            return this.gson.fromJson(jsonString, new TypeToken<WTPaginationResponse<WTEnvSchema>>() {
-            }.getType());
+            if (!response.isSuccessful()) {
+                WTErrorEntity error = this.gson.fromJson(jsonString, WTErrorEntity.class);
+                throw new WTRestException(error.getCode(), error.getMessage());
+            } else {
+                return this.gson.fromJson(jsonString, new TypeToken<WTPaginationResponse<WTEnvSchema>>() {
+                }.getType());
+            }
+
         }
     }
 
@@ -152,16 +153,14 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
 
     @Override
     public WTTokenEntity getToken() throws IOException {
-        if (this.token != null) {
-            return this.token;
+        WTTokenEntity token = this.getTokenFromDisk();
+        logger.info("get token from disk is true/false? = " + (token == null) + "");
+        if (token == null) {
+            token = this.getTokenFromApi();
+            if (token != null)
+                this.saveToken(token);
         }
-        this.token = this.getTokenFromDisk();
-        if (this.token == null) {
-            this.token = this.getTokenFromApi();
-            if (this.token != null)
-                this.saveToken(this.token);
-        }
-        return this.token;
+        return token;
     }
 
     @Override
@@ -178,7 +177,7 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
         String path = String.format(
                 this.getApiPath() + "/auth/token?grant_type=client_credentials&client_id=%s&client_secret=%s",
                 this.clientId, this.clientSecret);
-
+        logger.info("get token from api clientId ===============" + this.clientId + " " + this.clientSecret);
         return this.executeGet(path, WTTokenEntity.class, false);
     }
 
@@ -190,14 +189,14 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
         }
         WTTokenEntity token = null;
         try {
-            token = (WTTokenEntity) file.unmarshal(this.token);
+            token = (WTTokenEntity) file.unmarshal(token);
         } catch (Exception error) {
             logger.warning("file.unmarshal to token from file error = " + error.getMessage());
         }
         if (token != null) {
             if (WorktileUtils.isExpired(token.getExpiresIn())) {
                 logger.info("token in cache file is out of date, the token will be set null");
-                this.token = null;
+                token = null;
             }
         }
         return token;
