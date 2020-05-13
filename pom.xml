@@ -9,12 +9,12 @@
   </parent>
 
   <groupId>io.jenkins.plugins</groupId>
-  <artifactId>worktile-assistant</artifactId>
+  <artifactId>worktile</artifactId>
   <version>1.0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
-  <name>Jenkins Worktile Assistant Plugin</name>
+  <name>Jenkins Worktile Plugin</name>
   <description>
-    This plugin provides some functions for interacting with worktile Open API.
+    Connect your builds and deployments with your Agile management in Worktile.
   </description>
 
   <properties>
