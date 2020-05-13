@@ -7,16 +7,26 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
+
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
+
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor;
+import hudson.security.ACL;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -24,11 +34,12 @@ import org.kohsuke.stapler.StaplerRequest;
 @Extension
 public class WTGlobalConfiguration extends GlobalConfiguration {
     public static final String DEFAULT_ENDPOINT = "https://open.worktile.com";
+
     public static final Logger logger = Logger.getLogger(WTGlobalConfiguration.class.getName());
 
     private String endpoint;
     private String clientId;
-    private String clientSecret;
+    private String credentialsId;
 
     private transient WTEnvConfig evnConfig;
     private List<WTEnvConfig> envConfigs;
@@ -60,8 +71,8 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     }
 
     @DataBoundSetter
-    public void setClientSecret(String clientSecret) {
-        this.clientSecret = Util.fixEmptyAndTrim(clientSecret);
+    public void setCredentialsId(String credentialsId) {
+        this.credentialsId = Util.fixEmptyAndTrim(credentialsId);
     }
 
     @DataBoundSetter
@@ -70,7 +81,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     }
 
     public String getClientSecret() {
-        return clientSecret;
+        return credentialsId;
     }
 
     public String getClientId() {
@@ -83,8 +94,6 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
     public WTGlobalConfiguration() {
         load();
-        this.envConfigs = new ArrayList<>();
-        this.envConfigs.add(new WTEnvConfig("development", "https://www.baidu.com"));
     }
 
     @Override
@@ -94,10 +103,10 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             endpoint = WTGlobalConfiguration.DEFAULT_ENDPOINT;
         }
         String clientId = formatData.getString("clientId");
-        String clientSecret = formatData.getString("clientSecret");
+        String credentialsId = formatData.getString("credentialsId");
         setEndpoint(endpoint);
         setClientId(clientId);
-        setClientSecret(clientSecret);
+        setCredentialsId(credentialsId);
         save();
         WorktileUtils.RemoveTokenFile();
         return true;
@@ -115,16 +124,11 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
                 : FormValidation.error("client id can not be empty");
     }
 
-    public FormValidation doCheckClientSecret(@QueryParameter(value = "clientId", fixEmpty = true) String secretkey) {
-        return WorktileUtils.isNotBlank(secretkey) ? FormValidation.ok()
-                : FormValidation.error("secret key can not be empty");
-    }
-
     public FormValidation doTestConnection(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint,
             @QueryParameter(value = "clientId", fixEmpty = true) String clientId,
-            @QueryParameter(value = "clientSecret", fixEmpty = true) String clientSecret) throws IOException {
+            @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) throws IOException {
 
-        WorktileRestSession session = new WorktileRestSession(endpoint, clientId, clientSecret);
+        WorktileRestSession session = new WorktileRestSession(endpoint, clientId, credentialsId);
 
         try {
             WTErrorEntity err = session.doConnectTest();
@@ -135,6 +139,15 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             return FormValidation.error("Connect Worktile API Error, err : " + e.getMessage());
         }
 
+    }
+
+    public ListBoxModel doFillCredentialsIdItems(@QueryParameter final String endpoint,
+            @QueryParameter final String credentialsId) {
+
+        return new StandardListBoxModel().includeEmptyValue().includeMatchingAs(ACL.SYSTEM, Jenkins.get(),
+                StringCredentials.class,
+                URIRequirementBuilder.fromUri(StringUtils.defaultIfBlank(endpoint, DEFAULT_ENDPOINT)).build(),
+                CredentialsMatchers.always());
     }
 
     @Nonnull
