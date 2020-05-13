@@ -1,4 +1,4 @@
-package io.jenkins.plugins.worktile;
+package io.jenkins.plugins.worktile.pipeline;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,6 +25,8 @@ import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
+import io.jenkins.plugins.worktile.WTLogger;
+import io.jenkins.plugins.worktile.WorktileUtils;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
