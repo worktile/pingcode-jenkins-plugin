@@ -16,9 +16,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class WorktileUtils {
+public class WTHelper {
 
-    public final static Logger logger = Logger.getLogger(WorktileUtils.class.getName());
+    public final static Logger logger = Logger.getLogger(WTHelper.class.getName());
     public final static Pattern WORKITEM_PATTERN = Pattern.compile("#[^/]*([A-Za-z0-9_])+-([0-9])+");
 
     public static boolean isURL(String url) {
@@ -61,7 +61,7 @@ public class WorktileUtils {
     }
 
     public static List<String> getWorkItems(List<String> messages) {
-        List<String> workItems = WorktileUtils.getMatchSet(WorktileUtils.WORKITEM_PATTERN, messages, false, false);
+        List<String> workItems = WTHelper.getMatchSet(WTHelper.WORKITEM_PATTERN, messages, false, false);
         HashSet<String> set = new HashSet<>();
         for (String item : workItems) {
             set.add(item.substring(1));

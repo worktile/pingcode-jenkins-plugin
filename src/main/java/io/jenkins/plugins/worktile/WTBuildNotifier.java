@@ -10,7 +10,7 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
-import io.jenkins.plugins.worktile.service.WorktileRestSession;
+import io.jenkins.plugins.worktile.service.WTRestSession;
 import net.sf.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -23,15 +23,15 @@ import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-public class WorktileBuildNotifier extends Notifier {
+public class WTBuildNotifier extends Notifier {
     private static final long serialVersionUID = 1L;
 
-    public static final Logger logger = Logger.getLogger(WorktileBuildNotifier.class.getName());
+    public static final Logger logger = Logger.getLogger(WTBuildNotifier.class.getName());
 
     private String overview;
 
     @DataBoundConstructor
-    public WorktileBuildNotifier(String overview) {
+    public WTBuildNotifier(String overview) {
         setOverview(overview);
     }
 
@@ -52,7 +52,7 @@ public class WorktileBuildNotifier extends Notifier {
     }
 
     private void createBuild(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException {
-        WorktileRestSession session = new WorktileRestSession();
+        WTRestSession session = new WTRestSession();
         try {
             session.createBuild(this.makeResult(build, listener));
             listener.getLogger().println("Send build data to worktile open api");
@@ -67,17 +67,17 @@ public class WorktileBuildNotifier extends Notifier {
         result.identifier = build.getId();
         result.jobUrl = build.getProject().getAbsoluteUrl();
         result.status = Objects.requireNonNull(build.getResult()).toString().toLowerCase();
-        result.startAt = WorktileUtils.toSafeTs(build.getStartTimeInMillis());
-        result.endAt = WorktileUtils.toSafeTs(System.currentTimeMillis());
+        result.startAt = WTHelper.toSafeTs(build.getStartTimeInMillis());
+        result.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
         result.duration = build.getDuration();
         result.resultOverview = "";
         result.resultUrl = build.getProject().getAbsoluteUrl() + build.getNumber() + "/console";
-        result.workItemIdentifiers = WorktileUtils.resolveWorkItems(build, listener).toArray(new String[0]);
+        result.workItemIdentifiers = WTHelper.resolveWorkItems(build, listener).toArray(new String[0]);
 
         try {
             logger.info("start match overview " + this.getOverview());
-            List<String> matched = WorktileUtils.getMatchSet(Pattern.compile(this.getOverview()), build.getLog(999),
-                    true, true);
+            List<String> matched = WTHelper.getMatchSet(Pattern.compile(this.getOverview()), build.getLog(999), true,
+                    true);
 
             result.resultOverview = matched.size() > 0 ? matched.get(0) : "";
         } catch (Exception error) {
@@ -90,7 +90,7 @@ public class WorktileBuildNotifier extends Notifier {
     public static class Descriptor extends BuildStepDescriptor<Publisher> {
 
         public Descriptor() {
-            super(WorktileBuildNotifier.class);
+            super(WTBuildNotifier.class);
         }
 
         @SuppressWarnings("rawtypes")
@@ -106,10 +106,9 @@ public class WorktileBuildNotifier extends Notifier {
         }
 
         @Override
-        public WorktileBuildNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData)
-                throws FormException {
+        public WTBuildNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData) throws FormException {
             assert request != null;
-            return request.bindJSON(WorktileBuildNotifier.class, formData);
+            return request.bindJSON(WTBuildNotifier.class, formData);
         }
     }
 }

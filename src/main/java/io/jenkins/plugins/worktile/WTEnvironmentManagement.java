@@ -1,10 +1,5 @@
 package io.jenkins.plugins.worktile;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-
 import javax.annotation.Nonnull;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -15,12 +10,11 @@ import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
-import io.jenkins.plugins.worktile.model.WTEnvEntity;
-import io.jenkins.plugins.worktile.model.WTEnvSchema;
-import io.jenkins.plugins.worktile.model.WTErrorEntity;
-import io.jenkins.plugins.worktile.service.WorktileRestSession;
+import io.jenkins.plugins.worktile.model.WTEnvironmentEntity;
+import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
+import io.jenkins.plugins.worktile.service.WTRestSession;
 
-public class WTEnvConfig extends AbstractDescribableImpl<WTEnvConfig> {
+public class WTEnvironmentManagement extends AbstractDescribableImpl<WTEnvironmentManagement> {
 
     private String name;
 
@@ -28,14 +22,14 @@ public class WTEnvConfig extends AbstractDescribableImpl<WTEnvConfig> {
 
     private String id;
 
-    public WTEnvConfig(String id, String name, String htmlUrl) {
+    public WTEnvironmentManagement(String id, String name, String htmlUrl) {
         setId(id);
         setName(name);
         setHtmlUrl(htmlUrl);
     }
 
     @DataBoundConstructor
-    public WTEnvConfig(String name, String htmlUrl) {
+    public WTEnvironmentManagement(String name, String htmlUrl) {
         this(null, name, htmlUrl);
     }
 
@@ -66,7 +60,7 @@ public class WTEnvConfig extends AbstractDescribableImpl<WTEnvConfig> {
     }
 
     @Extension
-    public static class DescriptorImpl extends Descriptor<WTEnvConfig> {
+    public static class DescriptorImpl extends Descriptor<WTEnvironmentManagement> {
 
         @Nonnull
         @Override
@@ -76,15 +70,15 @@ public class WTEnvConfig extends AbstractDescribableImpl<WTEnvConfig> {
 
         public FormValidation doSave(@QueryParameter(value = "name", fixEmpty = true) String name,
                 @QueryParameter(value = "htmlUrl", fixEmpty = true) String htmlUrl) {
-            if (WorktileUtils.isBlank(name)) {
+            if (WTHelper.isBlank(name)) {
                 return FormValidation.error("name can't not be empty");
             }
 
-            final WTEnvEntity env = new WTEnvEntity(name, htmlUrl);
+            final WTEnvironmentEntity env = new WTEnvironmentEntity(name, htmlUrl);
 
             try {
-                final WorktileRestSession session = new WorktileRestSession();
-                final WTEnvSchema schema = session.createEnvironment(env);
+                final WTRestSession session = new WTRestSession();
+                final WTEnvironmentSchema schema = session.createEnvironment(env);
                 return FormValidation.ok(String.format("save environment %s ok", schema.name));
             } catch (Exception error) {
                 return FormValidation.error("save environment error " + error.getMessage());

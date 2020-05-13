@@ -1,14 +1,12 @@
-package io.jenkins.plugins.worktile;
+package io.jenkins.plugins.worktile.model;
 
-public class WTEnvironment {
-
+public class WTEnvironmentEntity {
     private String name;
-
     private String htmlUrl;
 
-    public WTEnvironment(String name, String htmlUrl) {
-        this.name = name;
-        this.htmlUrl = htmlUrl;
+    public WTEnvironmentEntity(String name, String htmlUrl) {
+        this.setName(name);
+        this.setHtmlUrl(htmlUrl);
     }
 
     public String getName() {
@@ -26,5 +24,4 @@ public class WTEnvironment {
     public void setHtmlUrl(String htmlUrl) {
         this.htmlUrl = htmlUrl;
     }
-
 }

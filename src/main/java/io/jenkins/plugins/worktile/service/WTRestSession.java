@@ -5,24 +5,24 @@ import java.io.IOException;
 import io.jenkins.plugins.worktile.WTGlobalConfiguration;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
 import io.jenkins.plugins.worktile.model.WTDeployEntity;
-import io.jenkins.plugins.worktile.model.WTEnvEntity;
-import io.jenkins.plugins.worktile.model.WTEnvSchema;
+import io.jenkins.plugins.worktile.model.WTEnvironmentEntity;
+import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
 import io.jenkins.plugins.worktile.model.WTPaginationResponse;
 import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.model.WTTokenEntity;
 import io.jenkins.plugins.worktile.resolver.TokenResolver;
 
-public class WorktileRestSession {
-    private final WorktileRestService service;
+public class WTRestSession {
+    private final WTRestService service;
 
     private final TokenResolver tokenResolver;
 
-    public WorktileRestSession(String endpoint, String clientId, String clientSecret) {
-        this.service = new WorktileRestService(endpoint, clientId, clientSecret);
+    public WTRestSession(String endpoint, String clientId, String clientSecret) {
+        this.service = new WTRestService(endpoint, clientId, clientSecret);
         this.tokenResolver = new TokenResolver(endpoint, clientId, clientSecret);
     }
 
-    public WorktileRestSession() {
+    public WTRestSession() {
         this(WTGlobalConfiguration.get().getEndpoint(), WTGlobalConfiguration.get().getClientId(),
                 WTGlobalConfiguration.get().getClientSecret());
     }
@@ -39,15 +39,15 @@ public class WorktileRestSession {
         return this.service.createDeploy(entity);
     }
 
-    public WTPaginationResponse<WTEnvSchema> listEnvironments() throws IOException, WTRestException {
+    public WTPaginationResponse<WTEnvironmentSchema> listEnvironments() throws IOException, WTRestException {
         return this.service.listEnvironments();
     }
 
-    public WTEnvSchema deleteEnvironment(String id) throws IOException, WTRestException {
+    public WTEnvironmentSchema deleteEnvironment(String id) throws IOException, WTRestException {
         return this.service.deleteEnvironment(id);
     }
 
-    public WTEnvSchema createEnvironment(WTEnvEntity entity) throws IOException, WTRestException {
+    public WTEnvironmentSchema createEnvironment(WTEnvironmentEntity entity) throws IOException, WTRestException {
         return this.service.createEnvironment(entity);
     }
 }

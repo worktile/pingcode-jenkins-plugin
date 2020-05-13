@@ -5,10 +5,10 @@ import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.util.FormValidation;
-import io.jenkins.plugins.worktile.model.WTEnvEntity;
-import io.jenkins.plugins.worktile.model.WTEnvSchema;
+import io.jenkins.plugins.worktile.model.WTEnvironmentEntity;
+import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
-import io.jenkins.plugins.worktile.service.WorktileRestSession;
+import io.jenkins.plugins.worktile.service.WTRestSession;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -61,13 +61,13 @@ public class WTProjectProperty extends JobProperty<Job<?, ?>> {
 
         public FormValidation doSyncEnv(@QueryParameter(value = "name", fixEmpty = true) final String name,
                 @QueryParameter(value = "htmlUrl", fixEmpty = true) final String htmlUrl) {
-            if (WorktileUtils.isBlank(name)) {
+            if (WTHelper.isBlank(name)) {
                 return FormValidation.error("name can't not be empty");
             }
-            final WTEnvEntity env = new WTEnvEntity(name, htmlUrl);
-            final WorktileRestSession session = new WorktileRestSession();
+            final WTEnvironmentEntity env = new WTEnvironmentEntity(name, htmlUrl);
+            final WTRestSession session = new WTRestSession();
             try {
-                WTEnvSchema envSchema = session.createEnvironment(env);
+                WTEnvironmentSchema envSchema = session.createEnvironment(env);
                 return FormValidation.ok(String.format("create %s successfully", envSchema.name));
             } catch (final Exception error) {
                 return FormValidation.error("Sync environment error " + error.getMessage());

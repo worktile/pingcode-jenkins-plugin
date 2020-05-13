@@ -22,13 +22,13 @@ import hudson.model.Descriptor;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import io.jenkins.plugins.worktile.model.WTEnvSchema;
+import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.model.WTPaginationResponse;
 import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.model.WTTokenEntity;
 import io.jenkins.plugins.worktile.resolver.SecretResolver;
-import io.jenkins.plugins.worktile.service.WorktileRestSession;
+import io.jenkins.plugins.worktile.service.WTRestSession;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -49,18 +49,18 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     private String clientId;
     private String credentialsId;
 
-    private transient List<WTEnvConfig> envConfigs;
+    private transient List<WTEnvironmentManagement> envConfigs;
 
     public String getDefaultEndpoint() {
         return WTGlobalConfiguration.DEFAULT_ENDPOINT;
     }
 
-    public List<WTEnvConfig> getEnvConfigs() {
+    public List<WTEnvironmentManagement> getEnvConfigs() {
         return envConfigs;
     }
 
     @DataBoundSetter
-    public void setEnvConfigs(List<WTEnvConfig> envConfigs) {
+    public void setEnvConfigs(List<WTEnvironmentManagement> envConfigs) {
         this.envConfigs = envConfigs;
     }
 
@@ -102,16 +102,16 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             logger.warning("can not get secret" + credentialsId);
             return;
         }
-        WorktileRestSession session = new WorktileRestSession(endpoint, clientId, secret.get());
+        WTRestSession session = new WTRestSession(endpoint, clientId, secret.get());
         Set<String> apiSet = new HashSet<String>();
-        WTPaginationResponse<WTEnvSchema> schemas = session.listEnvironments();
-        for (WTEnvSchema schema : schemas.values) {
+        WTPaginationResponse<WTEnvironmentSchema> schemas = session.listEnvironments();
+        for (WTEnvironmentSchema schema : schemas.values) {
             logger.info(String.format("name=%s", schema.name));
             apiSet.add(schema.id);
         }
 
         Set<String> configSet = new HashSet<String>();
-        for (WTEnvConfig envConfig : this.envConfigs) {
+        for (WTEnvironmentManagement envConfig : this.envConfigs) {
             configSet.add(envConfig.getId());
         }
 
@@ -121,7 +121,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
         String[] ids = set.toArray(new String[0]);
         for (String id : ids) {
-            WTEnvSchema deleteSchema = session.deleteEnvironment(id);
+            WTEnvironmentSchema deleteSchema = session.deleteEnvironment(id);
             logger.info("delete env" + deleteSchema.htmlUrl + deleteSchema.id);
         }
     }
@@ -141,25 +141,24 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         }
 
         logger.info("this.envConfigs count" + this.envConfigs.size());
-        WorktileUtils.RemoveTokenFile();
+        WTHelper.RemoveTokenFile();
         return true;
     }
 
     public FormValidation doCheckEndpoint(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint) {
-        if (WorktileUtils.isNotBlank(endpoint) && !WorktileUtils.isURL(endpoint)) {
+        if (WTHelper.isNotBlank(endpoint) && !WTHelper.isURL(endpoint)) {
             return FormValidation.error("endpoint format error");
         }
         return FormValidation.ok();
     }
 
     public FormValidation doCheckClientId(@QueryParameter(value = "clientId", fixEmpty = true) String clientId) {
-        return WorktileUtils.isNotBlank(clientId) ? FormValidation.ok()
-                : FormValidation.error("client id can not be empty");
+        return WTHelper.isNotBlank(clientId) ? FormValidation.ok() : FormValidation.error("client id can not be empty");
     }
 
     public FormValidation doCheckCredentialsId(
             @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) {
-        return WorktileUtils.isNotBlank(credentialsId) ? FormValidation.ok()
+        return WTHelper.isNotBlank(credentialsId) ? FormValidation.ok()
                 : FormValidation.error("credentialsId can not be empty");
     }
 
@@ -172,15 +171,15 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             return FormValidation.error("secret not found or wrong");
         }
 
-        WorktileRestSession session = new WorktileRestSession(endpoint, clientId, secret.get());
+        WTRestSession session = new WTRestSession(endpoint, clientId, secret.get());
 
         try {
             WTTokenEntity token = session.doConnectTest();
             try {
-                WTPaginationResponse<WTEnvSchema> schemas = session.listEnvironments();
-                for (WTEnvSchema schema : schemas.values) {
+                WTPaginationResponse<WTEnvironmentSchema> schemas = session.listEnvironments();
+                for (WTEnvironmentSchema schema : schemas.values) {
                     logger.info(String.format("name=%s", schema.name));
-                    envConfigs.add(new WTEnvConfig(schema.id, schema.name, schema.htmlUrl));
+                    envConfigs.add(new WTEnvironmentManagement(schema.id, schema.name, schema.htmlUrl));
                 }
             } catch (Exception exception) {
                 logger.warning("get env list error = " + exception.getMessage());

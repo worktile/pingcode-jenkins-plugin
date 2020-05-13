@@ -26,10 +26,10 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
 import io.jenkins.plugins.worktile.WTLogger;
-import io.jenkins.plugins.worktile.WorktileUtils;
+import io.jenkins.plugins.worktile.WTHelper;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
-import io.jenkins.plugins.worktile.service.WorktileRestSession;
+import io.jenkins.plugins.worktile.service.WTRestSession;
 
 public class WTSendBuildStep extends Step implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -103,7 +103,7 @@ public class WTSendBuildStep extends Step implements Serializable {
             buildEntity.identifier = build.getId();
             buildEntity.status = this.step.buildResult;
 
-            List<String> resultOverview = WorktileUtils.getMatchSet(Pattern.compile(this.step.reviewPattern),
+            List<String> resultOverview = WTHelper.getMatchSet(Pattern.compile(this.step.reviewPattern),
                     build.getLog(999), true, true);
             buildEntity.resultOverview = resultOverview.size() > 0 ? resultOverview.get(0) : "";
 
@@ -120,11 +120,11 @@ public class WTSendBuildStep extends Step implements Serializable {
                 }
             });
             buildEntity.workItemIdentifiers = array.toArray(new String[0]);
-            buildEntity.startAt = WorktileUtils.toSafeTs(build.getStartTimeInMillis());
-            buildEntity.endAt = WorktileUtils.toSafeTs(build.getTimeInMillis());
+            buildEntity.startAt = WTHelper.toSafeTs(build.getStartTimeInMillis());
+            buildEntity.endAt = WTHelper.toSafeTs(build.getTimeInMillis());
             buildEntity.duration = build.getDuration();
 
-            WorktileRestSession session = new WorktileRestSession();
+            WTRestSession session = new WTRestSession();
             try {
                 session.createBuild(buildEntity);
             } catch (Exception exception) {
