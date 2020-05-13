@@ -12,11 +12,8 @@ public class WorktileRestSession {
     }
 
     public WorktileRestSession() {
-        this(
-            WTGlobalConfiguration.get().getEndpoint(),
-            WTGlobalConfiguration.get().getClientId(),
-            WTGlobalConfiguration.get().getClientSecret()
-        );
+        this(WTGlobalConfiguration.get().getEndpoint(), WTGlobalConfiguration.get().getClientId(),
+                WTGlobalConfiguration.get().getClientSecret());
     }
 
     private final WorktileRestService service;
@@ -35,6 +32,10 @@ public class WorktileRestSession {
 
     public WTPaginationResponse<WTEnvSchema> listEnv() throws IOException, WTRestException {
         return this.service.listEnv();
+    }
+
+    public WTEnvSchema deleteEnv(String id) throws IOException, WTRestException {
+        return this.service.deleteEnv(id);
     }
 
     public boolean createDeploy(WTDeployEntity entity) throws IOException, WTRestException {

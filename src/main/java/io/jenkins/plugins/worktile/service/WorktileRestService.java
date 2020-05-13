@@ -91,6 +91,25 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
         }
     }
 
+    @Override
+    public WTEnvSchema deleteEnv(String id) throws IOException, WTRestException {
+        String path = this.getApiPath() + "/release/environments/" + id;
+        Builder requestBuilder = new Request.Builder().url(path).delete();
+        WTTokenEntity token = this.getToken();
+        requestBuilder.addHeader("Authorization", "Bearer " + token.getAccessToken());
+        try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
+            String jsonString = Objects.requireNonNull(response.body()).string();
+            if (!response.isSuccessful()) {
+                WTErrorEntity error = this.gson.fromJson(jsonString, WTErrorEntity.class);
+                throw new WTRestException(error.getCode(), error.getMessage());
+            } else {
+                return this.gson.fromJson(jsonString, new TypeToken<WTPaginationResponse<WTEnvSchema>>() {
+                }.getType());
+            }
+
+        }
+    }
+
     private void tryThrowWTRestException(String json) throws WTRestException {
         WTErrorEntity error = gson.fromJson(json, WTErrorEntity.class);
         if (error.getCode() != null && error.getMessage() != null) {
@@ -177,7 +196,6 @@ public class WorktileRestService implements WorktileRestClient, WorktileTokenabl
         String path = String.format(
                 this.getApiPath() + "/auth/token?grant_type=client_credentials&client_id=%s&client_secret=%s",
                 this.clientId, this.clientSecret);
-        logger.info("get token from api clientId ===============" + this.clientId + " " + this.clientSecret);
         return this.executeGet(path, WTTokenEntity.class, false);
     }
 

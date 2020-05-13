@@ -3,8 +3,10 @@ package io.jenkins.plugins.worktile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
@@ -23,6 +25,7 @@ import hudson.util.ListBoxModel;
 import io.jenkins.plugins.worktile.model.WTEnvSchema;
 import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.model.WTPaginationResponse;
+import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.service.WorktileRestSession;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
@@ -91,6 +94,36 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         this.envConfigs = new ArrayList<>();
     }
 
+    public void syncEnvironments() throws IOException, WTRestException {
+        Optional<String> secret = SecretResolver.getSecretOf(credentialsId);
+        if (!secret.isPresent()) {
+            logger.warning("can not get secret" + credentialsId);
+            return;
+        }
+        WorktileRestSession session = new WorktileRestSession(endpoint, clientId, secret.get());
+        Set<String> apiSet = new HashSet<String>();
+        WTPaginationResponse<WTEnvSchema> schemas = session.listEnv();
+        for (WTEnvSchema schema : schemas.values) {
+            logger.info(String.format("name=%s", schema.name));
+            apiSet.add(schema.id);
+        }
+
+        Set<String> configSet = new HashSet<String>();
+        for (WTEnvConfig envConfig : this.envConfigs) {
+            configSet.add(envConfig.getId());
+        }
+
+        Set<String> set = new HashSet<String>();
+        set.addAll(apiSet);
+        set.removeAll(configSet);
+
+        String[] ids = set.toArray(new String[0]);
+        for (String id : ids) {
+            WTEnvSchema deleteSchema = session.deleteEnv(id);
+            logger.info("delete env" + deleteSchema.htmlUrl + deleteSchema.id);
+        }
+    }
+
     @Override
     public boolean configure(StaplerRequest req, JSONObject formatData) throws FormException {
         try {
@@ -99,6 +132,13 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             throw new FormException(e.getMessage(), e, "globalConfig");
         }
         save();
+        try {
+            this.syncEnvironments();
+        } catch (Exception exception) {
+            logger.info(exception.getMessage());
+        }
+
+        logger.info("this.envConfigs count" + this.envConfigs.size());
         WorktileUtils.RemoveTokenFile();
         return true;
     }
@@ -134,6 +174,15 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
         try {
             WTErrorEntity err = session.doConnectTest();
+            try {
+                WTPaginationResponse<WTEnvSchema> schemas = session.listEnv();
+                for (WTEnvSchema schema : schemas.values) {
+                    logger.info(String.format("name=%s", schema.name));
+                    envConfigs.add(new WTEnvConfig(schema.id, schema.name, schema.htmlUrl));
+                }
+            } catch (Exception exception) {
+                logger.warning("get env list error = " + exception.getMessage());
+            }
             if (err.getMessage() == null) {
                 save();
                 return FormValidation.ok("Connect Worktile API Successfully");

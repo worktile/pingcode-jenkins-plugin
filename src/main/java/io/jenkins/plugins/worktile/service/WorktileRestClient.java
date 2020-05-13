@@ -2,6 +2,7 @@ package io.jenkins.plugins.worktile.service;
 
 import java.io.IOException;
 
+import groovy.json.internal.IO;
 import io.jenkins.plugins.worktile.WTEnvironment;
 import io.jenkins.plugins.worktile.model.*;
 
@@ -14,5 +15,7 @@ public interface WorktileRestClient {
 
     WTPaginationResponse<WTEnvSchema> listEnv() throws IOException, WTRestException;
 
-    boolean createDeploy(WTDeployEntity entity) throws  IOException, WTRestException;
+    WTEnvSchema deleteEnv(String id) throws IOException, WTRestException;
+
+    boolean createDeploy(WTDeployEntity entity) throws IOException, WTRestException;
 }
