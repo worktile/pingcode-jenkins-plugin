@@ -1,5 +1,16 @@
 package io.jenkins.plugins.worktile;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
+import org.jetbrains.annotations.NotNull;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
+
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -9,19 +20,8 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
-import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WTRestSession;
 import net.sf.json.JSONObject;
-import org.jetbrains.annotations.NotNull;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 public class WTBuildNotifier extends Notifier {
     private static final long serialVersionUID = 1L;

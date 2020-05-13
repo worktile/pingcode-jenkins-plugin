@@ -25,10 +25,9 @@ import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
-import io.jenkins.plugins.worktile.WTLogger;
 import io.jenkins.plugins.worktile.WTHelper;
+import io.jenkins.plugins.worktile.WTLogger;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
-import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WTRestSession;
 
 public class WTSendBuildStep extends Step implements Serializable {
@@ -110,7 +109,6 @@ public class WTSendBuildStep extends Step implements Serializable {
             buildEntity.jobUrl = build.getParent().getAbsoluteUrl() + build.getNumber() + "/";
             buildEntity.resultUrl = build.getParent().getAbsoluteUrl() + build.getNumber() + "/console";
 
-            // TODO: merge with FreeStyle Build
             List<String> array = new ArrayList<>();
             List<ChangeLogSet<? extends ChangeLogSet.Entry>> changeLogSets = build.getChangeSets();
             changeLogSets.forEach(changeLogSet -> {

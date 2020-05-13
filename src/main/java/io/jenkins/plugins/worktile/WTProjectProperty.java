@@ -1,5 +1,13 @@
 package io.jenkins.plugins.worktile;
 
+import java.util.logging.Logger;
+
+import javax.annotation.Nonnull;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
+
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.JobProperty;
@@ -7,15 +15,7 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.util.FormValidation;
 import io.jenkins.plugins.worktile.model.WTEnvironmentEntity;
 import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
-import io.jenkins.plugins.worktile.model.WTErrorEntity;
 import io.jenkins.plugins.worktile.service.WTRestSession;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
-
-import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.util.logging.Logger;
 
 public class WTProjectProperty extends JobProperty<Job<?, ?>> {
     private String name;
