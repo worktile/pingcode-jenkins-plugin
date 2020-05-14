@@ -16,6 +16,7 @@
   <description>
     Connect your builds and deployments with your Agile management in Worktile.
   </description>
+  <url>https://github.com/jenkinsci/worktile-plugin</url>
 
   <properties>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
