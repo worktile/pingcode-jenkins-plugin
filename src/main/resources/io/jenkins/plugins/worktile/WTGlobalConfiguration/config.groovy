@@ -1,5 +1,6 @@
 package io.jenkins.plugins.worktile.WTGlobalConfiguration
 
+/* groovylint-disable-next-line CompileStatic */
 f = namespace(lib.FormTagLib)
 c = namespace(lib.CredentialsTagLib)
 

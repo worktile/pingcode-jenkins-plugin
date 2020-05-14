@@ -1,6 +1,5 @@
 package io.jenkins.plugins.worktile;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
@@ -10,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,11 +18,9 @@ import org.apache.commons.text.StringSubstitutor;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 import hudson.EnvVars;
-import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
-import jenkins.model.Jenkins;
 
 public class WTHelper {
 

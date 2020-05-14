@@ -1,11 +1,7 @@
 package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
@@ -25,9 +21,6 @@ import hudson.Util;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
-import io.jenkins.plugins.worktile.model.WTPaginationResponse;
-import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.resolver.SecretResolver;
 import io.jenkins.plugins.worktile.service.WTRestSession;
 import jenkins.model.GlobalConfiguration;
