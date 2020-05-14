@@ -18,6 +18,14 @@
   </description>
   <url>https://github.com/jenkinsci/worktile-plugin</url>
 
+  <developers>
+    <developer>
+      <id>worktile</id>
+      <name>Worktile</name>
+      <email>support@worktile.com</email>
+    </developer>
+  </developers>
+
   <properties>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <jenkins.version>2.176.3</jenkins.version>
