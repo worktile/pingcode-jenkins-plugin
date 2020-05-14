@@ -1,33 +1,62 @@
 package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
-import hudson.Extension;
-import hudson.Util;
-import hudson.util.FormValidation;
-import io.jenkins.plugins.worktile.model.WTErrorEntity;
-import io.jenkins.plugins.worktile.service.WorktileRestSession;
-import jenkins.model.GlobalConfiguration;
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
+
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import hudson.Extension;
+import hudson.Util;
+import hudson.security.ACL;
+import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
+import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
+import io.jenkins.plugins.worktile.model.WTPaginationResponse;
+import io.jenkins.plugins.worktile.model.WTRestException;
+import io.jenkins.plugins.worktile.resolver.SecretResolver;
+import io.jenkins.plugins.worktile.service.WTRestSession;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+
 @Extension
 public class WTGlobalConfiguration extends GlobalConfiguration {
     public static final String DEFAULT_ENDPOINT = "https://open.worktile.com";
+
     public static final Logger logger = Logger.getLogger(WTGlobalConfiguration.class.getName());
 
     private String endpoint;
     private String clientId;
-    private String clientSecret;
+    private String credentialsId;
+
+    private transient List<WTEnvironmentManagement> envConfigs;
 
     public String getDefaultEndpoint() {
         return WTGlobalConfiguration.DEFAULT_ENDPOINT;
+    }
+
+    public List<WTEnvironmentManagement> getEnvConfigs() {
+        return envConfigs;
+    }
+
+    @DataBoundSetter
+    public void setEnvConfigs(List<WTEnvironmentManagement> envConfigs) {
+        this.envConfigs = envConfigs;
     }
 
     @DataBoundSetter
@@ -36,8 +65,8 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     }
 
     @DataBoundSetter
-    public void setClientSecret(String clientSecret) {
-        this.clientSecret = Util.fixEmptyAndTrim(clientSecret);
+    public void setCredentialsId(String credentialsId) {
+        this.credentialsId = Util.fixEmptyAndTrim(credentialsId);
     }
 
     @DataBoundSetter
@@ -46,7 +75,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     }
 
     public String getClientSecret() {
-        return clientSecret;
+        return credentialsId;
     }
 
     public String getClientId() {
@@ -59,56 +88,98 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
     public WTGlobalConfiguration() {
         load();
+        this.envConfigs = new ArrayList<>();
+    }
+
+    public void syncEnvironments() throws IOException, WTRestException {
+        Optional<String> secret = SecretResolver.getSecretOf(credentialsId);
+        if (!secret.isPresent()) {
+            logger.warning("can not get secret" + credentialsId);
+            return;
+        }
+        WTRestSession session = new WTRestSession(endpoint, clientId, secret.get());
+        Set<String> apiSet = new HashSet<String>();
+        WTPaginationResponse<WTEnvironmentSchema> schemas = session.listEnvironments();
+        for (WTEnvironmentSchema schema : schemas.values) {
+            logger.info(String.format("name=%s", schema.name));
+            apiSet.add(schema.id);
+        }
+
+        Set<String> configSet = new HashSet<String>();
+        for (WTEnvironmentManagement envConfig : this.envConfigs) {
+            configSet.add(envConfig.getId());
+        }
+
+        Set<String> set = new HashSet<String>();
+        set.addAll(apiSet);
+        set.removeAll(configSet);
+
+        String[] ids = set.toArray(new String[0]);
+        for (String id : ids) {
+            WTEnvironmentSchema deleteSchema = session.deleteEnvironment(id);
+            logger.info("delete env" + deleteSchema.htmlUrl + deleteSchema.id);
+        }
     }
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject formatData) throws FormException {
-        String endpoint = formatData.getString("endpoint");
-        if (WorktileUtils.isBlank(endpoint)) {
-            endpoint = WTGlobalConfiguration.DEFAULT_ENDPOINT;
+        try {
+            req.bindJSON(this, formatData);
+        } catch (Exception e) {
+            throw new FormException(e.getMessage(), e, "globalConfig");
         }
-        String clientId = formatData.getString("clientId");
-        String clientSecret = formatData.getString("clientSecret");
-        setEndpoint(endpoint);
-        setClientId(clientId);
-        setClientSecret(clientSecret);
         save();
-        WorktileUtils.RemoveTokenFile();
+        logger.info("this.envConfigs count" + this.envConfigs.size());
+        WTHelper.RemoveTokenFile();
         return true;
     }
 
     public FormValidation doCheckEndpoint(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint) {
-        if (WorktileUtils.isNotBlank(endpoint) && !WorktileUtils.isURL(endpoint)) {
+        if (WTHelper.isNotBlank(endpoint) && !WTHelper.isURL(endpoint)) {
             return FormValidation.error("endpoint format error");
         }
         return FormValidation.ok();
     }
 
     public FormValidation doCheckClientId(@QueryParameter(value = "clientId", fixEmpty = true) String clientId) {
-        return WorktileUtils.isNotBlank(clientId) ? FormValidation.ok()
-                : FormValidation.error("client id can not be empty");
+        return WTHelper.isNotBlank(clientId) ? FormValidation.ok() : FormValidation.error("client id can not be empty");
     }
 
-    public FormValidation doCheckClientSecret(@QueryParameter(value = "clientId", fixEmpty = true) String secretkey) {
-        return WorktileUtils.isNotBlank(secretkey) ? FormValidation.ok()
-                : FormValidation.error("secret key can not be empty");
+    public FormValidation doCheckCredentialsId(
+            @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) {
+        return WTHelper.isNotBlank(credentialsId) ? FormValidation.ok()
+                : FormValidation.error("credentialsId can not be empty");
     }
 
     public FormValidation doTestConnection(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint,
             @QueryParameter(value = "clientId", fixEmpty = true) String clientId,
-            @QueryParameter(value = "clientSecret", fixEmpty = true) String clientSecret) throws IOException {
+            @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) throws IOException {
 
-        WorktileRestSession session = new WorktileRestSession(endpoint, clientId, clientSecret);
+        if (StringUtils.isEmpty(credentialsId) || StringUtils.isEmpty(endpoint) || StringUtils.isEmpty(clientId)) {
+            return FormValidation.error("error");
+        }
+        Optional<String> secret = SecretResolver.getSecretOf(credentialsId);
+        if (!secret.isPresent()) {
+            return FormValidation.error("secret not found or wrong");
+        }
+        WTRestSession session = new WTRestSession(WTHelper.apiV1(endpoint), clientId, secret.get());
 
         try {
-            WTErrorEntity err = session.doConnectTest();
-            return err.getMessage() == null ? FormValidation.ok("Connect Worktile API Successfully")
-                    : FormValidation.error(err.getMessage());
+            session.doConnectTest();
+            return FormValidation.ok("Connect worktile API successfully");
         } catch (Exception e) {
-            WTGlobalConfiguration.logger.warning("test connect error");
-            return FormValidation.error("Connect Worktile API Error, err : " + e.getMessage());
+            logger.warning("test connect error " + e.getMessage());
+            return FormValidation.error("Connect Worktile OpenApi Error; err : " + e.getMessage());
         }
+    }
 
+    public ListBoxModel doFillCredentialsIdItems(@QueryParameter final String endpoint,
+            @QueryParameter final String clientId, @QueryParameter final String credentialsId) {
+
+        return new StandardListBoxModel().includeEmptyValue().includeMatchingAs(ACL.SYSTEM, Jenkins.get(),
+                StringCredentials.class,
+                URIRequirementBuilder.fromUri(StringUtils.defaultIfBlank(endpoint, DEFAULT_ENDPOINT)).build(),
+                CredentialsMatchers.always());
     }
 
     @Nonnull

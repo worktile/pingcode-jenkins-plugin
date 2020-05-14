@@ -11,9 +11,9 @@ import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import io.jenkins.plugins.worktile.model.WTDeployEntity;
-import io.jenkins.plugins.worktile.model.WTEnvSchema;
+import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
 import io.jenkins.plugins.worktile.model.WTPaginationResponse;
-import io.jenkins.plugins.worktile.service.WorktileRestSession;
+import io.jenkins.plugins.worktile.service.WTRestSession;
 import net.sf.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -24,8 +24,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-public class WorktileDeployNotifier extends Notifier {
-    public static final Logger logger = Logger.getLogger(WorktileDeployNotifier.class.getName());
+public class WTDeployNotifier extends Notifier {
+    public static final Logger logger = Logger.getLogger(WTDeployNotifier.class.getName());
 
     private String environment;
 
@@ -34,7 +34,7 @@ public class WorktileDeployNotifier extends Notifier {
     private String releaseUrl;
 
     @DataBoundConstructor
-    public WorktileDeployNotifier(final String environment, final String releaseName, final String releaseUrl) {
+    public WTDeployNotifier(final String environment, final String releaseName, final String releaseUrl) {
         setReleaseName(releaseName);
         setReleaseUrl(releaseUrl);
         setEnvironment(environment);
@@ -74,27 +74,25 @@ public class WorktileDeployNotifier extends Notifier {
     }
 
     private void performCreateDeploy(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-        WorktileRestSession session = new WorktileRestSession();
+        WTRestSession session = new WTRestSession();
         try {
-            boolean result = session.createDeploy(makeEntity(build, listener));
-            if(result) listener.getLogger().println("create deploy successfully");
-            else listener.getLogger().println("create deploy failure");
+            session.createDeploy(makeEntity(build, listener));
         } catch (Exception error) {
             listener.getLogger().println("create deploy failure " + error.getMessage());
         }
     }
 
-    private  WTDeployEntity makeEntity(AbstractBuild<?, ?> build, BuildListener listener) {
+    private WTDeployEntity makeEntity(AbstractBuild<?, ?> build, BuildListener listener) {
         WTDeployEntity entity = new WTDeployEntity();
-        entity.releaseName = WorktileUtils.renderTemplateString(getReleaseName(), build);
-        entity.releaseUrl = getReleaseUrl();
+        entity.releaseName = WTHelper.renderTemplateString(getReleaseName(), build);
+        entity.releaseUrl = WTHelper.renderTemplateString(getReleaseUrl(), build);
         entity.envId = getEnvironment();
-        entity.startAt = WorktileUtils.toSafeTs(build.getStartTimeInMillis());
+        entity.startAt = WTHelper.toSafeTs(build.getStartTimeInMillis());
         String buildResult = Objects.requireNonNull(build.getResult()).toString().toLowerCase();
         entity.status = buildResult.equals("success") ? "deployed" : "not_deployed";
-        entity.endAt = WorktileUtils.toSafeTs(System.currentTimeMillis());
+        entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
         entity.duration = build.getDuration();
-        entity.workItemIdentifiers = WorktileUtils.resolveWorkItems(build, listener).toArray(new String[0]);
+        entity.workItemIdentifiers = WTHelper.resolveWorkItems(build, listener).toArray(new String[0]);
         return entity;
     }
 
@@ -116,14 +114,14 @@ public class WorktileDeployNotifier extends Notifier {
         }
 
         @Override
-        public WorktileDeployNotifier newInstance(final StaplerRequest request, @NotNull final JSONObject formData) {
+        public WTDeployNotifier newInstance(final StaplerRequest request, @NotNull final JSONObject formData) {
             assert request != null;
-            return request.bindJSON(WorktileDeployNotifier.class, formData);
+            return request.bindJSON(WTDeployNotifier.class, formData);
         }
 
         public FormValidation doCheckReleaseName(
                 @QueryParameter(value = "releaseName", fixEmpty = true) String releaseName) {
-            if (WorktileUtils.isBlank(releaseName)) {
+            if (WTHelper.isBlank(releaseName)) {
                 return FormValidation.error("release name can not be empty");
             }
             return FormValidation.ok();
@@ -131,14 +129,14 @@ public class WorktileDeployNotifier extends Notifier {
 
         public ListBoxModel doFillEnvironmentItems() {
             final ListBoxModel items = new ListBoxModel();
-            WorktileRestSession session = new WorktileRestSession();
+            WTRestSession session = new WTRestSession();
             try {
-                WTPaginationResponse<WTEnvSchema> schemas = session.listEnv();
-                for (WTEnvSchema schema : schemas.values) {
+                WTPaginationResponse<WTEnvironmentSchema> schemas = session.listEnvironments();
+                for (WTEnvironmentSchema schema : schemas.values) {
                     items.add(schema.name, schema.id);
                 }
             } catch (Exception exception) {
-                WorktileDeployNotifier.logger.info(exception.getMessage());
+                WTDeployNotifier.logger.info("get environments error " + exception.getMessage());
             }
             return items;
         }

@@ -1,6 +1,6 @@
 package io.jenkins.plugins.worktile.model;
 
-public class WTEnvSchema {
+public class WTEnvironmentSchema {
     public String id;
     public String url;
     public String name;

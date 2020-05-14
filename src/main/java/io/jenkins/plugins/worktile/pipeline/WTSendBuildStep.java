@@ -1,7 +1,7 @@
-package io.jenkins.plugins.worktile;
+package io.jenkins.plugins.worktile.pipeline;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -24,10 +24,10 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.scm.ChangeLogSet;
+import io.jenkins.plugins.worktile.WTHelper;
+import io.jenkins.plugins.worktile.WTLogger;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
-import io.jenkins.plugins.worktile.model.WTErrorEntity;
-import io.jenkins.plugins.worktile.service.WorktileRestSession;
+import io.jenkins.plugins.worktile.service.WTRestSession;
 
 public class WTSendBuildStep extends Step implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -80,6 +80,7 @@ public class WTSendBuildStep extends Step implements Serializable {
 
     public static class WTSendBuildStepExecution extends SynchronousNonBlockingStepExecution<Boolean> {
         private static final long serialVersionUID = 1L;
+
         private final WTSendBuildStep step;
 
         public WTSendBuildStepExecution(StepContext context, WTSendBuildStep step) {
@@ -90,46 +91,31 @@ public class WTSendBuildStep extends Step implements Serializable {
         @Override
         public Boolean run() throws Exception {
             WorkflowRun build = getContext().get(WorkflowRun.class);
-
-            assert build != null;
             TaskListener listener = getContext().get(TaskListener.class);
             WTLogger logger = new WTLogger(listener);
 
-            WTBuildEntity buildEntity = new WTBuildEntity();
+            WTBuildEntity.Builder builder = new WTBuildEntity.Builder()
+                    .withName(build.getFullDisplayName().replace(" #", "-")).withIdentifier(build.getId())
+                    .withJobUrl(build.getAbsoluteUrl()).withRusultUrl(build.getAbsoluteUrl() + "console")
+                    .withStatus(this.step.buildResult.toLowerCase() == "success" ? "success" : "failure")
+                    .withStartAt(WTHelper.toSafeTs(build.getStartTimeInMillis()))
+                    .withWorkItemIdentifiers(WTHelper.resolveWorkItemsFromPipelineStep(build).toArray(new String[0]))
+                    .withEndAt(WTHelper.toSafeTs(System.currentTimeMillis())).withDuration(build.getDuration());
 
-            buildEntity.name = build.getFullDisplayName().replace(" #", "-");
-            buildEntity.identifier = build.getId();
-            buildEntity.status = this.step.buildResult;
+            List<String> matched = WTHelper.getMatchSet(Pattern.compile(this.step.reviewPattern),
+                    Arrays.asList(build.getLog().split("\n")), true, true);
+            builder.withResultOvervier(matched.size() > 0 ? matched.get(0) : "");
 
-            List<String> resultOverview = WorktileUtils.getMatchSet(Pattern.compile(this.step.reviewPattern),
-                    build.getLog(999), true, true);
-            buildEntity.resultOverview = resultOverview.size() > 0 ? resultOverview.get(0) : "";
-
-            buildEntity.jobUrl = build.getParent().getAbsoluteUrl() + build.getNumber() + "/";
-            buildEntity.resultUrl = build.getParent().getAbsoluteUrl() + build.getNumber() + "/console";
-
-            // TODO: merge with FreeStyle Build
-            List<String> array = new ArrayList<>();
-            List<ChangeLogSet<? extends ChangeLogSet.Entry>> changeLogSets = build.getChangeSets();
-            changeLogSets.forEach(changeLogSet -> {
-                for (Object change : changeLogSet) {
-                    ChangeLogSet.Entry entry = (ChangeLogSet.Entry) change;
-                    array.add(entry.getMsg());
-                }
-            });
-            buildEntity.workItemIdentifiers = array.toArray(new String[0]);
-            buildEntity.startAt = WorktileUtils.toSafeTs(build.getStartTimeInMillis());
-            buildEntity.endAt = WorktileUtils.toSafeTs(build.getTimeInMillis());
-            buildEntity.duration = build.getDuration();
-
-            WorktileRestSession session = new WorktileRestSession();
+            WTRestSession session = new WTRestSession();
+            WTBuildEntity entity = builder.build();
             try {
-                WTErrorEntity error = session.createBuild(buildEntity);
-                if (error != null) {
-                    logger.info("save build error " + "code: " + error.getCode() + " message: " + error.getMessage());
-                }
+
+                session.createBuild(entity);
             } catch (Exception exception) {
-                logger.info(exception.getMessage());
+                logger.info(String.format("Create build(%s) error; stack", exception.getMessage()));
+                if (this.step.failOnError) {
+                    return false;
+                }
             }
             return true;
         }
