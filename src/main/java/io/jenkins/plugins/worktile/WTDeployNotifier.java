@@ -136,7 +136,7 @@ public class WTDeployNotifier extends Notifier {
                     items.add(schema.name, schema.id);
                 }
             } catch (Exception exception) {
-                WTDeployNotifier.logger.info(exception.getMessage());
+                WTDeployNotifier.logger.info("get environments error " + exception.getMessage());
             }
             return items;
         }

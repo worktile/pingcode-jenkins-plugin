@@ -10,11 +10,16 @@ import org.apache.commons.text.StringSubstitutor;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.util.concurrent.ExecutionError;
 
 public class WTHelper {
 
@@ -44,6 +49,12 @@ public class WTHelper {
 
     public static String apiV1(String endpoint) {
         return endpoint + "/v1";
+    }
+
+    public static String md5(String source) throws NoSuchAlgorithmException {
+        MessageDigest mDigest = MessageDigest.getInstance("MD5");
+        mDigest.update(source.getBytes());
+        return new BigInteger(1, mDigest.digest()).toString(16);
     }
 
     public static List<String> getMatchSet(Pattern pattern, List<String> messages, boolean breakFirstMatch,

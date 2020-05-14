@@ -28,7 +28,6 @@ import hudson.util.ListBoxModel;
 import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
 import io.jenkins.plugins.worktile.model.WTPaginationResponse;
 import io.jenkins.plugins.worktile.model.WTRestException;
-import io.jenkins.plugins.worktile.model.WTTokenEntity;
 import io.jenkins.plugins.worktile.resolver.SecretResolver;
 import io.jenkins.plugins.worktile.service.WTRestSession;
 import jenkins.model.GlobalConfiguration;
@@ -130,12 +129,6 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             throw new FormException(e.getMessage(), e, "globalConfig");
         }
         save();
-        try {
-            this.syncEnvironments();
-        } catch (Exception exception) {
-            logger.info(exception.getMessage());
-        }
-
         logger.info("this.envConfigs count" + this.envConfigs.size());
         WTHelper.RemoveTokenFile();
         return true;
@@ -172,18 +165,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         WTRestSession session = new WTRestSession(WTHelper.apiV1(endpoint), clientId, secret.get());
 
         try {
-            WTTokenEntity token = session.doConnectTest();
-            // try {
-            // WTPaginationResponse<WTEnvironmentSchema> schemas =
-            // session.listEnvironments();
-            // for (WTEnvironmentSchema schema : schemas.values) {
-            // logger.info(String.format("name=%s", schema.name));
-            // envConfigs.add(new WTEnvironmentManagement(schema.id, schema.name,
-            // schema.htmlUrl));
-            // }
-            // } catch (Exception exception) {
-            // logger.warning("get env list error = " + exception.getMessage());
-            // }
+            session.doConnectTest();
             return FormValidation.ok("Connect worktile API successfully");
         } catch (Exception e) {
             logger.warning("test connect error " + e.getMessage());
@@ -194,8 +176,8 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     public ListBoxModel doFillCredentialsIdItems(@QueryParameter final String endpoint,
             @QueryParameter final String clientId, @QueryParameter final String credentialsId) {
 
-        return new StandardListBoxModel().includeCurrentValue(credentialsId).includeEmptyValue().includeMatchingAs(
-                ACL.SYSTEM, Jenkins.get(), StringCredentials.class,
+        return new StandardListBoxModel().includeEmptyValue().includeMatchingAs(ACL.SYSTEM, Jenkins.get(),
+                StringCredentials.class,
                 URIRequirementBuilder.fromUri(StringUtils.defaultIfBlank(endpoint, DEFAULT_ENDPOINT)).build(),
                 CredentialsMatchers.always());
     }

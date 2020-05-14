@@ -34,7 +34,7 @@ public class TokenResolver {
         String path = String.format(
                 this.baseURL + "/auth/token?grant_type=client_credentials&client_id=%s&client_secret=%s", this.clientId,
                 this.clientSecret);
-        logger.info("path = " + path);
+
         String json = this.apiConnection.executeGet(path);
         return gson.fromJson(json, WTTokenEntity.class);
     }

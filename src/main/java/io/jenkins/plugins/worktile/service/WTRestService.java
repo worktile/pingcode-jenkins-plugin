@@ -31,7 +31,7 @@ public class WTRestService implements BuildClient, DeployClient, EnvironmentClie
     private String baseURL;
     private ApiConnection apiConnection;
 
-    public WTRestService(String endpoint, String token, String clientSecret) {
+    public WTRestService(String endpoint, String token) {
         this.baseURL = endpoint;
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         OkHttpClient client = builder.build();
