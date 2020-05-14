@@ -109,7 +109,6 @@ public class WTSendBuildStep extends Step implements Serializable {
             WTRestSession session = new WTRestSession();
             WTBuildEntity entity = builder.build();
             try {
-
                 session.createBuild(entity);
             } catch (Exception exception) {
                 logger.info(String.format("Create build(%s) error; stack", exception.getMessage()));

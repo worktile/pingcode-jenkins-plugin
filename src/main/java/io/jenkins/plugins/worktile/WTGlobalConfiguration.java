@@ -1,11 +1,7 @@
 package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
@@ -25,9 +21,6 @@ import hudson.Util;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
-import io.jenkins.plugins.worktile.model.WTPaginationResponse;
-import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.resolver.SecretResolver;
 import io.jenkins.plugins.worktile.service.WTRestSession;
 import jenkins.model.GlobalConfiguration;
@@ -38,25 +31,16 @@ import net.sf.json.JSONObject;
 public class WTGlobalConfiguration extends GlobalConfiguration {
     public static final String DEFAULT_ENDPOINT = "https://open.worktile.com";
 
+    public static final String WORKTILE_GLOBAL_CONFIG_ID = "worktile-global-configuration";
+
     public static final Logger logger = Logger.getLogger(WTGlobalConfiguration.class.getName());
 
     private String endpoint;
     private String clientId;
     private String credentialsId;
 
-    private transient List<WTEnvironmentManagement> envConfigs;
-
     public String getDefaultEndpoint() {
         return WTGlobalConfiguration.DEFAULT_ENDPOINT;
-    }
-
-    public List<WTEnvironmentManagement> getEnvConfigs() {
-        return envConfigs;
-    }
-
-    @DataBoundSetter
-    public void setEnvConfigs(List<WTEnvironmentManagement> envConfigs) {
-        this.envConfigs = envConfigs;
     }
 
     @DataBoundSetter
@@ -74,7 +58,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         this.clientId = Util.fixEmptyAndTrim(clientId);
     }
 
-    public String getClientSecret() {
+    public String getCredentialsId() {
         return credentialsId;
     }
 
@@ -88,37 +72,11 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
     public WTGlobalConfiguration() {
         load();
-        this.envConfigs = new ArrayList<>();
     }
 
-    public void syncEnvironments() throws IOException, WTRestException {
-        Optional<String> secret = SecretResolver.getSecretOf(credentialsId);
-        if (!secret.isPresent()) {
-            logger.warning("can not get secret" + credentialsId);
-            return;
-        }
-        WTRestSession session = new WTRestSession(endpoint, clientId, secret.get());
-        Set<String> apiSet = new HashSet<String>();
-        WTPaginationResponse<WTEnvironmentSchema> schemas = session.listEnvironments();
-        for (WTEnvironmentSchema schema : schemas.values) {
-            logger.info(String.format("name=%s", schema.name));
-            apiSet.add(schema.id);
-        }
-
-        Set<String> configSet = new HashSet<String>();
-        for (WTEnvironmentManagement envConfig : this.envConfigs) {
-            configSet.add(envConfig.getId());
-        }
-
-        Set<String> set = new HashSet<String>();
-        set.addAll(apiSet);
-        set.removeAll(configSet);
-
-        String[] ids = set.toArray(new String[0]);
-        for (String id : ids) {
-            WTEnvironmentSchema deleteSchema = session.deleteEnvironment(id);
-            logger.info("delete env" + deleteSchema.htmlUrl + deleteSchema.id);
-        }
+    @Override
+    public String getId() {
+        return WORKTILE_GLOBAL_CONFIG_ID;
     }
 
     @Override
@@ -129,8 +87,6 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             throw new FormException(e.getMessage(), e, "globalConfig");
         }
         save();
-        logger.info("this.envConfigs count" + this.envConfigs.size());
-        WTHelper.RemoveTokenFile();
         return true;
     }
 

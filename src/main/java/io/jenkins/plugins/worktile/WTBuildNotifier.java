@@ -24,7 +24,6 @@ import io.jenkins.plugins.worktile.service.WTRestSession;
 import net.sf.json.JSONObject;
 
 public class WTBuildNotifier extends Notifier {
-    private static final long serialVersionUID = 1L;
 
     public static final Logger logger = Logger.getLogger(WTBuildNotifier.class.getName());
 
