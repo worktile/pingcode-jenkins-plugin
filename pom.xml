@@ -12,7 +12,7 @@
   <artifactId>worktile</artifactId>
   <version>1.0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
-  <name>Jenkins Worktile Plugin</name>
+  <name>Worktile Plugin</name>
   <description>
     Connect your builds and deployments with your Agile management in Worktile.
   </description>
