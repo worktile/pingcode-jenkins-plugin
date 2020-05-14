@@ -1,7 +1,5 @@
 package io.jenkins.plugins.worktile;
 
-import java.io.PrintStream;
-
 import hudson.Extension;
 
 import hudson.model.Run;
@@ -19,11 +17,5 @@ public class ProjectListener extends RunListener<Run> {
     @SuppressWarnings("CastToConcreteClass")
     @Override
     public void onCompleted(Run run, TaskListener listener) {
-        PrintStream log = listener.getLogger();
-        log.println("result = " + run.getResult());
-        log.println("build nubmer ? = " + run.number);
-        log.println("build run.getId ? = " + run.getId());
-        log.println("build run duration" + run.getDuration());
-        log.println("build run getUrl" + run.getUrl());
     }
 }

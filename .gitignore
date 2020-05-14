@@ -7,3 +7,6 @@ worktile.iml
 .project
 .classpath
 .settings
+.factorypath
+
+worktile-assistant.iml
