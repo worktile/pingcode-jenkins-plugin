@@ -42,6 +42,10 @@ public class WTHelper {
         return Math.round(time / 1000);
     }
 
+    public static String apiV1(String endpoint) {
+        return endpoint + "/v1";
+    }
+
     public static List<String> getMatchSet(Pattern pattern, List<String> messages, boolean breakFirstMatch,
             boolean origin) {
         HashSet<String> set = new HashSet<>();

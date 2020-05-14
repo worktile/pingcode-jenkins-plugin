@@ -17,13 +17,13 @@ public class WTRestSession {
 
     private final TokenResolver tokenResolver;
 
-    public WTRestSession(String endpoint, String clientId, String clientSecret) {
-        this.service = new WTRestService(endpoint, clientId, clientSecret);
-        this.tokenResolver = new TokenResolver(endpoint, clientId, clientSecret);
+    public WTRestSession(String baseURL, String clientId, String clientSecret) {
+        this.service = new WTRestService(baseURL, clientId, clientSecret);
+        this.tokenResolver = new TokenResolver(baseURL, clientId, clientSecret);
     }
 
     public WTRestSession() {
-        this(WTGlobalConfiguration.get().getEndpoint(), WTGlobalConfiguration.get().getClientId(),
+        this(WTGlobalConfiguration.get().getEndpoint() + "/v1", WTGlobalConfiguration.get().getClientId(),
                 WTGlobalConfiguration.get().getClientSecret());
     }
 

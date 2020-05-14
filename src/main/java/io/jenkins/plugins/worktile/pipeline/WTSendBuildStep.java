@@ -91,23 +91,10 @@ public class WTSendBuildStep extends Step implements Serializable {
         @Override
         public Boolean run() throws Exception {
             WorkflowRun build = getContext().get(WorkflowRun.class);
-
-            assert build != null;
             TaskListener listener = getContext().get(TaskListener.class);
             WTLogger logger = new WTLogger(listener);
 
-            WTBuildEntity buildEntity = new WTBuildEntity();
-
-            buildEntity.name = build.getFullDisplayName().replace(" #", "-");
-            buildEntity.identifier = build.getId();
-            buildEntity.status = this.step.buildResult;
-
-            List<String> resultOverview = WTHelper.getMatchSet(Pattern.compile(this.step.reviewPattern),
-                    build.getLog(999), true, true);
-            buildEntity.resultOverview = resultOverview.size() > 0 ? resultOverview.get(0) : "";
-
-            buildEntity.jobUrl = build.getParent().getAbsoluteUrl() + build.getNumber() + "/";
-            buildEntity.resultUrl = build.getParent().getAbsoluteUrl() + build.getNumber() + "/console";
+            String status = Objects.requireNonNull(build.getResult()).toString().toLowerCase();
 
             List<String> array = new ArrayList<>();
             List<ChangeLogSet<? extends ChangeLogSet.Entry>> changeLogSets = build.getChangeSets();
@@ -117,14 +104,18 @@ public class WTSendBuildStep extends Step implements Serializable {
                     array.add(entry.getMsg());
                 }
             });
-            buildEntity.workItemIdentifiers = array.toArray(new String[0]);
-            buildEntity.startAt = WTHelper.toSafeTs(build.getStartTimeInMillis());
-            buildEntity.endAt = WTHelper.toSafeTs(build.getTimeInMillis());
-            buildEntity.duration = build.getDuration();
+            WTBuildEntity.Builder builder = new WTBuildEntity.Builder()
+                    .withName(build.getFullDisplayName().replace(" #", "-")).withIdentifier(build.getId())
+                    .withJobUrl(build.getAbsoluteUrl() + build.getNumber() + "/")
+                    .withRusultUrl(build.getAbsoluteUrl() + build.getNumber() + "/console")
+                    .withStatus(status == "success" ? "success" : "failure")
+                    .withStartAt(WTHelper.toSafeTs(build.getStartTimeInMillis()))
+                    .withWorkItemIdentifiers(array.toArray(new String[0]))
+                    .withEndAt(WTHelper.toSafeTs(System.currentTimeMillis())).withDuration(build.getDuration());
 
             WTRestSession session = new WTRestSession();
             try {
-                session.createBuild(buildEntity);
+                session.createBuild(builder.build());
             } catch (Exception exception) {
                 logger.info(exception.getMessage());
             }

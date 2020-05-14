@@ -1,6 +1,7 @@
 package io.jenkins.plugins.worktile.client;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -18,6 +19,8 @@ import okhttp3.Response;
 
 public class ApiConnection {
     private final String accessToken;
+
+    private Logger logger = Logger.getLogger(ApiConnection.class.getName());
 
     private OkHttpClient httpClient;
 
@@ -37,26 +40,26 @@ public class ApiConnection {
         this(null, new OkHttpClient());
     }
 
-    private <TResponse> TResponse execute(Builder requestBuilder) throws IOException, WTRestException {
+    private String execute(Builder requestBuilder) throws IOException, WTRestException {
         if (accessToken != null) {
             requestBuilder.addHeader("Authorization", "Bearer " + accessToken);
         }
+        requestBuilder.addHeader("Content-Type", "application/json");
         try (Response response = this.httpClient.newCall(requestBuilder.build()).execute()) {
             if (!response.isSuccessful()) {
                 WTErrorEntity error = gson.fromJson(response.body().string(), WTErrorEntity.class);
                 throw new WTRestException(error.getCode(), error.getMessage());
             }
-            return gson.fromJson(response.body().string(), new TypeToken<TResponse>() {
-            }.getType());
+            return response.body().string();
         }
     }
 
-    public <TResponse> TResponse executeGet(String url) throws IOException, WTRestException {
+    public String executeGet(String url) throws IOException, WTRestException {
         Builder requestBuilder = new Request.Builder().url(url).get();
         return execute(requestBuilder);
     }
 
-    public <TResponse> TResponse executePost(String url, Object body) throws IOException, WTRestException {
+    public String executePost(String url, Object body) throws IOException, WTRestException {
         MediaType JSONMedia = MediaType.get("application/json; charset=utf-8");
         String json = gson.toJson(body);
         RequestBody reqBody = RequestBody.create(json, JSONMedia);
@@ -64,8 +67,7 @@ public class ApiConnection {
         return execute(requestBuilder);
     }
 
-    public <TResponse, TBody> TResponse executeDelete(String url, Class<TBody> body)
-            throws IOException, WTRestException {
+    public <TBody> String executeDelete(String url, Class<TBody> body) throws IOException, WTRestException {
         MediaType JSONMedia = MediaType.get("application/json; charset=utf-8");
         String json = gson.toJson(body);
         RequestBody reqBody = RequestBody.create(json, JSONMedia);
@@ -73,7 +75,7 @@ public class ApiConnection {
         return execute(requestBuilder);
     }
 
-    public <TResponse> TResponse executeDelete(String url) throws IOException, WTRestException {
+    public String executeDelete(String url) throws IOException, WTRestException {
         Builder requestBuilder = new Request.Builder().url(url).delete();
         return execute(requestBuilder);
     }

@@ -3,6 +3,10 @@ package io.jenkins.plugins.worktile.service;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import io.jenkins.plugins.worktile.client.ApiConnection;
 import io.jenkins.plugins.worktile.client.BuildClient;
 import io.jenkins.plugins.worktile.client.DeployClient;
@@ -13,18 +17,22 @@ import io.jenkins.plugins.worktile.model.WTEnvironmentEntity;
 import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
 import io.jenkins.plugins.worktile.model.WTPaginationResponse;
 import io.jenkins.plugins.worktile.model.WTRestException;
+
+import com.google.gson.reflect.TypeToken;
 import okhttp3.OkHttpClient;
 
 public class WTRestService implements BuildClient, DeployClient, EnvironmentClient {
 
     public static final Logger logger = Logger.getLogger(WTRestService.class.getName());
-    private static final String verPrefix = "/v1";
+
+    private final Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .create();
 
     private String baseURL;
     private ApiConnection apiConnection;
 
     public WTRestService(String endpoint, String token, String clientSecret) {
-        this.baseURL = endpoint + verPrefix;
+        this.baseURL = endpoint;
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         OkHttpClient client = builder.build();
         this.apiConnection = new ApiConnection(token, client);
@@ -45,18 +53,22 @@ public class WTRestService implements BuildClient, DeployClient, EnvironmentClie
     @Override
     public WTPaginationResponse<WTEnvironmentSchema> listEnvironments() throws IOException, WTRestException {
         String path = this.baseURL + "";
-        return this.apiConnection.executeGet(path);
+        String json = this.apiConnection.executeGet(path);
+        return gson.fromJson(json, new TypeToken<WTPaginationResponse<WTEnvironmentSchema>>() {
+        }.getType());
     }
 
     @Override
     public WTEnvironmentSchema createEnvironment(WTEnvironmentEntity entity) throws IOException, WTRestException {
         String path = this.baseURL + "";
-        return this.apiConnection.executePost(path, entity);
+        String json = this.apiConnection.executePost(path, entity);
+        return gson.fromJson(json, WTEnvironmentSchema.class);
     }
 
     @Override
     public WTEnvironmentSchema deleteEnvironment(String id) throws IOException, WTRestException {
-        String path = this.baseURL + "";
-        return this.apiConnection.executeDelete(path);
+        String path = this.baseURL + "/" + id;
+        String json = this.apiConnection.executeDelete(path);
+        return gson.fromJson(json, WTEnvironmentSchema.class);
     }
 }

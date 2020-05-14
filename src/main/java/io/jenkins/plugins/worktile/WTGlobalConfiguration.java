@@ -162,37 +162,40 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             @QueryParameter(value = "clientId", fixEmpty = true) String clientId,
             @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) throws IOException {
 
+        if (StringUtils.isEmpty(credentialsId) || StringUtils.isEmpty(endpoint) || StringUtils.isEmpty(clientId)) {
+            return FormValidation.error("error");
+        }
         Optional<String> secret = SecretResolver.getSecretOf(credentialsId);
         if (!secret.isPresent()) {
             return FormValidation.error("secret not found or wrong");
         }
-
-        WTRestSession session = new WTRestSession(endpoint, clientId, secret.get());
+        WTRestSession session = new WTRestSession(WTHelper.apiV1(endpoint), clientId, secret.get());
 
         try {
             WTTokenEntity token = session.doConnectTest();
-            try {
-                WTPaginationResponse<WTEnvironmentSchema> schemas = session.listEnvironments();
-                for (WTEnvironmentSchema schema : schemas.values) {
-                    logger.info(String.format("name=%s", schema.name));
-                    envConfigs.add(new WTEnvironmentManagement(schema.id, schema.name, schema.htmlUrl));
-                }
-            } catch (Exception exception) {
-                logger.warning("get env list error = " + exception.getMessage());
-            }
-
+            // try {
+            // WTPaginationResponse<WTEnvironmentSchema> schemas =
+            // session.listEnvironments();
+            // for (WTEnvironmentSchema schema : schemas.values) {
+            // logger.info(String.format("name=%s", schema.name));
+            // envConfigs.add(new WTEnvironmentManagement(schema.id, schema.name,
+            // schema.htmlUrl));
+            // }
+            // } catch (Exception exception) {
+            // logger.warning("get env list error = " + exception.getMessage());
+            // }
             return FormValidation.ok("Connect worktile API successfully");
         } catch (Exception e) {
-            WTGlobalConfiguration.logger.warning("test connect error");
-            return FormValidation.error("Connect Worktile API Error, err : " + e.getMessage());
+            logger.warning("test connect error " + e.getMessage());
+            return FormValidation.error("Connect Worktile OpenApi Error; err : " + e.getMessage());
         }
     }
 
     public ListBoxModel doFillCredentialsIdItems(@QueryParameter final String endpoint,
             @QueryParameter final String clientId, @QueryParameter final String credentialsId) {
 
-        return new StandardListBoxModel().includeEmptyValue().includeMatchingAs(ACL.SYSTEM, Jenkins.get(),
-                StringCredentials.class,
+        return new StandardListBoxModel().includeCurrentValue(credentialsId).includeEmptyValue().includeMatchingAs(
+                ACL.SYSTEM, Jenkins.get(), StringCredentials.class,
                 URIRequirementBuilder.fromUri(StringUtils.defaultIfBlank(endpoint, DEFAULT_ENDPOINT)).build(),
                 CredentialsMatchers.always());
     }

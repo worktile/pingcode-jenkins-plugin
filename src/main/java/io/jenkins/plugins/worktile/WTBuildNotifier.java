@@ -62,28 +62,24 @@ public class WTBuildNotifier extends Notifier {
     }
 
     private WTBuildEntity makeResult(AbstractBuild<?, ?> build, BuildListener listener) throws IOException {
-        WTBuildEntity result = new WTBuildEntity();
-        result.name = build.getFullDisplayName();
-        result.identifier = build.getId();
-        result.jobUrl = build.getProject().getAbsoluteUrl();
-        result.status = Objects.requireNonNull(build.getResult()).toString().toLowerCase();
-        result.startAt = WTHelper.toSafeTs(build.getStartTimeInMillis());
-        result.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
-        result.duration = build.getDuration();
-        result.resultOverview = "";
-        result.resultUrl = build.getProject().getAbsoluteUrl() + build.getNumber() + "/console";
-        result.workItemIdentifiers = WTHelper.resolveWorkItems(build, listener).toArray(new String[0]);
+        String status = Objects.requireNonNull(build.getResult()).toString().toLowerCase();
+        WTBuildEntity.Builder builder = new WTBuildEntity.Builder()
+                .withName(build.getFullDisplayName().replace(" #", "-")).withIdentifier(build.getId())
+                .withJobUrl(build.getProject().getAbsoluteUrl() + build.getNumber() + "/")
+                .withRusultUrl(build.getProject().getAbsoluteUrl() + build.getNumber() + "/console")
+                .withStatus(status == "success" ? "success" : "failure")
+                .withStartAt(WTHelper.toSafeTs(build.getStartTimeInMillis()))
+                .withWorkItemIdentifiers(WTHelper.resolveWorkItems(build, listener).toArray(new String[0]))
+                .withEndAt(WTHelper.toSafeTs(System.currentTimeMillis())).withDuration(build.getDuration());
 
         try {
-            logger.info("start match overview " + this.getOverview());
             List<String> matched = WTHelper.getMatchSet(Pattern.compile(this.getOverview()), build.getLog(999), true,
                     true);
-
-            result.resultOverview = matched.size() > 0 ? matched.get(0) : "";
+            builder.withResultOvervier(matched.size() > 0 ? matched.get(0) : "");
         } catch (Exception error) {
             logger.info("match overview result error" + error.getMessage());
         }
-        return result;
+        return builder.build();
     }
 
     @Extension
