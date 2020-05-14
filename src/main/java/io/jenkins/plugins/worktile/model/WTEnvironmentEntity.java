@@ -9,6 +9,10 @@ public class WTEnvironmentEntity {
         this.setHtmlUrl(htmlUrl);
     }
 
+    public WTEnvironmentEntity(String name) {
+        this(name, null);
+    }
+
     public String getName() {
         return name;
     }

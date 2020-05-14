@@ -59,6 +59,16 @@ public class WTRestService implements BuildClient, DeployClient, EnvironmentClie
     }
 
     @Override
+    public WTEnvironmentSchema getEnvironmentByName(String name) throws IOException, WTRestException {
+        String path = this.baseURL + "/release/environments?page_index=0&page_size=100&name=" + name;
+        String json = this.apiConnection.executeGet(path);
+        WTPaginationResponse<WTEnvironmentSchema> response = gson.fromJson(json,
+                new TypeToken<WTPaginationResponse<WTEnvironmentSchema>>() {
+                }.getType());
+        return response.values.length == 0 ? null : response.values[0];
+    }
+
+    @Override
     public WTEnvironmentSchema createEnvironment(WTEnvironmentEntity entity) throws IOException, WTRestException {
         String path = this.baseURL + "/release/environments";
         String json = this.apiConnection.executePost(path, entity);

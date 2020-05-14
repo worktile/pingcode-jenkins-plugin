@@ -85,7 +85,7 @@ public class WTDeployNotifier extends Notifier {
     private WTDeployEntity makeEntity(AbstractBuild<?, ?> build, BuildListener listener) {
         WTDeployEntity entity = new WTDeployEntity();
         entity.releaseName = WTHelper.renderTemplateString(getReleaseName(), build);
-        entity.releaseUrl = getReleaseUrl();
+        entity.releaseUrl = WTHelper.renderTemplateString(getReleaseUrl(), build);
         entity.envId = getEnvironment();
         entity.startAt = WTHelper.toSafeTs(build.getStartTimeInMillis());
         String buildResult = Objects.requireNonNull(build.getResult()).toString().toLowerCase();

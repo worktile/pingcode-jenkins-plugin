@@ -66,6 +66,10 @@ public class WTRestSession {
         return this.getWTRestService().listEnvironments();
     }
 
+    public WTEnvironmentSchema getEnvironmentByName(String name) throws IOException, WTRestException {
+        return this.getWTRestService().getEnvironmentByName(name);
+    }
+
     public WTEnvironmentSchema deleteEnvironment(String id) throws IOException, WTRestException {
         return this.getWTRestService().deleteEnvironment(id);
     }

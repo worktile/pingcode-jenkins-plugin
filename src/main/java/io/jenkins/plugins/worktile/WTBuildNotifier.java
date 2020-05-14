@@ -63,9 +63,10 @@ public class WTBuildNotifier extends Notifier {
 
     private WTBuildEntity makeResult(AbstractBuild<?, ?> build, BuildListener listener) throws IOException {
         String status = Objects.requireNonNull(build.getResult()).toString().toLowerCase();
+
         WTBuildEntity.Builder builder = new WTBuildEntity.Builder()
                 .withName(build.getFullDisplayName().replace(" #", "-")).withIdentifier(build.getId())
-                .withJobUrl(build.getProject().getAbsoluteUrl() + build.getNumber() + "/")
+                .withJobUrl(build.getProject().getAbsoluteUrl() + "/")
                 .withRusultUrl(build.getProject().getAbsoluteUrl() + build.getNumber() + "/console")
                 .withStatus(status == "success" ? "success" : "failure")
                 .withStartAt(WTHelper.toSafeTs(build.getStartTimeInMillis()))

@@ -24,7 +24,6 @@ public class MemoryTokenCache {
     public static WTTokenEntity get(String clientId, String clientSecret) {
         try {
             String key = WTHelper.md5(clientId + clientSecret);
-            logger.info("get wtTokenEntity by " + key);
             WTTokenEntity token = store.get(key);
             return token;
         } catch (Exception exception) {
