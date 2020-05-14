@@ -46,7 +46,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     private String clientId;
     private String credentialsId;
 
-    private transient List<WTEnvironmentManagement> envConfigs;
+    private List<WTEnvironmentManagement> envConfigs;
 
     public String getDefaultEndpoint() {
         return WTGlobalConfiguration.DEFAULT_ENDPOINT;
@@ -90,12 +90,22 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
     public WTGlobalConfiguration() {
         load();
-        this.envConfigs = new ArrayList<>();
     }
 
     @Override
     public String getId() {
         return WORKTILE_GLOBAL_CONFIG_ID;
+    }
+
+    public void loadEnvironments(WTRestSession session) {
+        try {
+            WTPaginationResponse<WTEnvironmentSchema> schemas = session.listEnvironments();
+            for (WTEnvironmentSchema schema : schemas.values) {
+                this.envConfigs.add(new WTEnvironmentManagement(schema.id, schema.name, schema.htmlUrl));
+            }
+        } catch (Exception e) {
+
+        }
     }
 
     public void syncEnvironments() throws IOException, WTRestException {
@@ -135,7 +145,6 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             throw new FormException(e.getMessage(), e, "globalConfig");
         }
         save();
-        logger.info("this.envConfigs count = " + this.envConfigs.size());
         return true;
     }
 
@@ -171,6 +180,8 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
         try {
             session.doConnectTest();
+            save();
+            this.loadEnvironments(session);
             return FormValidation.ok("Connect worktile API successfully");
         } catch (Exception e) {
             logger.warning("test connect error " + e.getMessage());

@@ -96,16 +96,6 @@ public class WTHelper {
         return toSafeTs(System.currentTimeMillis()) > future;
     }
 
-    public static XmlFile getTokenXmlFile() {
-        File file = new File(Objects.requireNonNull(Jenkins.getInstanceOrNull()).getRootDir(), "worktile.token.xml");
-        return new XmlFile(file);
-    }
-
-    public static void RemoveTokenFile() {
-        File file = new File(Objects.requireNonNull(Jenkins.getInstanceOrNull()).getRootDir(), "worktile.token.xml");
-        file.delete();
-    }
-
     @SuppressWarnings("rawtypes")
     public static HashMap<String, String> predefined(AbstractBuild build) throws IOException, InterruptedException {
         HashMap<String, String> map = new HashMap<>();

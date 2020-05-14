@@ -26,11 +26,11 @@ f.section(title: _('Worktile application')) {
         f.validateButton(title: 'TestConnection', method: 'testConnection', with: 'endpoint,clientId,credentialsId')
     }
 
-    f.advanced {
-        f.entry(title: _('deploy environments')) {
-            f.repeatableHeteroProperty(field: 'envConfigs', items: instance.envConfigs, hasHeader: true) {
-                f.repeatableDeleteButton()
-            }
-        }
-    }
+    // f.advanced(align: 'left') {
+    //     f.entry(title: _('deploy environments')) {
+    //         f.repeatableHeteroProperty(field: 'envConfigs', items: instance.envConfigs, hasHeader: true) {
+    //             f.repeatableDeleteButton()
+    //         }
+    //     }
+    // }
 }
