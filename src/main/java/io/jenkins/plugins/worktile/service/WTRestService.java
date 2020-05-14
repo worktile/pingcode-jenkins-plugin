@@ -46,13 +46,13 @@ public class WTRestService implements BuildClient, DeployClient, EnvironmentClie
 
     @Override
     public Object createDeploy(WTDeployEntity entity) throws IOException, WTRestException {
-        String path = this.baseURL + "/build/builds";
+        String path = this.baseURL + "/release/deploys";
         return this.apiConnection.executePost(path, entity);
     }
 
     @Override
     public WTPaginationResponse<WTEnvironmentSchema> listEnvironments() throws IOException, WTRestException {
-        String path = this.baseURL + "";
+        String path = this.baseURL + "/release/environments?page_index=0&page_size=100";
         String json = this.apiConnection.executeGet(path);
         return gson.fromJson(json, new TypeToken<WTPaginationResponse<WTEnvironmentSchema>>() {
         }.getType());
@@ -60,14 +60,14 @@ public class WTRestService implements BuildClient, DeployClient, EnvironmentClie
 
     @Override
     public WTEnvironmentSchema createEnvironment(WTEnvironmentEntity entity) throws IOException, WTRestException {
-        String path = this.baseURL + "";
+        String path = this.baseURL + "/release/environments";
         String json = this.apiConnection.executePost(path, entity);
         return gson.fromJson(json, WTEnvironmentSchema.class);
     }
 
     @Override
     public WTEnvironmentSchema deleteEnvironment(String id) throws IOException, WTRestException {
-        String path = this.baseURL + "/" + id;
+        String path = this.baseURL + "/release/environments/" + id;
         String json = this.apiConnection.executeDelete(path);
         return gson.fromJson(json, WTEnvironmentSchema.class);
     }
