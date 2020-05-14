@@ -46,19 +46,8 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     private String clientId;
     private String credentialsId;
 
-    private List<WTEnvironmentManagement> envConfigs;
-
     public String getDefaultEndpoint() {
         return WTGlobalConfiguration.DEFAULT_ENDPOINT;
-    }
-
-    public List<WTEnvironmentManagement> getEnvConfigs() {
-        return envConfigs;
-    }
-
-    @DataBoundSetter
-    public void setEnvConfigs(List<WTEnvironmentManagement> envConfigs) {
-        this.envConfigs = envConfigs;
     }
 
     @DataBoundSetter
@@ -95,46 +84,6 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     @Override
     public String getId() {
         return WORKTILE_GLOBAL_CONFIG_ID;
-    }
-
-    public void loadEnvironments(WTRestSession session) {
-        try {
-            WTPaginationResponse<WTEnvironmentSchema> schemas = session.listEnvironments();
-            for (WTEnvironmentSchema schema : schemas.values) {
-                this.envConfigs.add(new WTEnvironmentManagement(schema.id, schema.name, schema.htmlUrl));
-            }
-        } catch (Exception e) {
-
-        }
-    }
-
-    public void syncEnvironments() throws IOException, WTRestException {
-        Optional<String> secret = SecretResolver.getSecretOf(credentialsId);
-        if (!secret.isPresent()) {
-            logger.warning("can not get secret" + credentialsId);
-            return;
-        }
-        WTRestSession session = new WTRestSession(endpoint, clientId, secret.get());
-        Set<String> apiSet = new HashSet<String>();
-        WTPaginationResponse<WTEnvironmentSchema> schemas = session.listEnvironments();
-        for (WTEnvironmentSchema schema : schemas.values) {
-            logger.info(String.format("name=%s", schema.name));
-            apiSet.add(schema.id);
-        }
-
-        Set<String> configSet = new HashSet<String>();
-        for (WTEnvironmentManagement envConfig : this.envConfigs) {
-            configSet.add(envConfig.getId());
-        }
-
-        Set<String> set = new HashSet<>(apiSet);
-        set.removeAll(configSet);
-
-        String[] ids = set.toArray(new String[0]);
-        for (String id : ids) {
-            WTEnvironmentSchema deleteSchema = session.deleteEnvironment(id);
-            logger.info("delete env" + deleteSchema.htmlUrl + deleteSchema.id);
-        }
     }
 
     @Override
@@ -180,8 +129,6 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
         try {
             session.doConnectTest();
-            save();
-            this.loadEnvironments(session);
             return FormValidation.ok("Connect worktile API successfully");
         } catch (Exception e) {
             logger.warning("test connect error " + e.getMessage());
