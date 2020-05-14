@@ -38,6 +38,8 @@ import net.sf.json.JSONObject;
 public class WTGlobalConfiguration extends GlobalConfiguration {
     public static final String DEFAULT_ENDPOINT = "https://open.worktile.com";
 
+    public static final String WORKTILE_GLOBAL_CONFIG_ID = "worktile-global-configuration";
+
     public static final Logger logger = Logger.getLogger(WTGlobalConfiguration.class.getName());
 
     private String endpoint;
@@ -74,7 +76,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         this.clientId = Util.fixEmptyAndTrim(clientId);
     }
 
-    public String getClientSecret() {
+    public String getCredentialsId() {
         return credentialsId;
     }
 
@@ -89,6 +91,11 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     public WTGlobalConfiguration() {
         load();
         this.envConfigs = new ArrayList<>();
+    }
+
+    @Override
+    public String getId() {
+        return WORKTILE_GLOBAL_CONFIG_ID;
     }
 
     public void syncEnvironments() throws IOException, WTRestException {
@@ -110,8 +117,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             configSet.add(envConfig.getId());
         }
 
-        Set<String> set = new HashSet<String>();
-        set.addAll(apiSet);
+        Set<String> set = new HashSet<>(apiSet);
         set.removeAll(configSet);
 
         String[] ids = set.toArray(new String[0]);
@@ -129,8 +135,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             throw new FormException(e.getMessage(), e, "globalConfig");
         }
         save();
-        logger.info("this.envConfigs count" + this.envConfigs.size());
-        WTHelper.RemoveTokenFile();
+        logger.info("this.envConfigs count = " + this.envConfigs.size());
         return true;
     }
 

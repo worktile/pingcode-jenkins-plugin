@@ -33,7 +33,7 @@ public class WTRestSession {
 
     public WTRestSession() {
         this(WTHelper.apiV1(WTGlobalConfiguration.get().getEndpoint()), WTGlobalConfiguration.get().getClientId(),
-                SecretResolver.getSecretOf(WTGlobalConfiguration.get().getClientSecret()).get());
+                SecretResolver.getSecretOf(WTGlobalConfiguration.get().getCredentialsId()).get());
     }
 
     private WTRestService getWTRestService() {
