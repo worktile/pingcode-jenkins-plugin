@@ -1,4 +1,4 @@
-Jenkins Worktile Plugin
+Worktile Plugin
 ===================
 
 #### About Worktile Plugin
