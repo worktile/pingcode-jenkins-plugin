@@ -27,6 +27,51 @@ public class WTBuildEntity {
         this.duration = builder.duration;
     }
 
+    public long getDuration() {
+        return duration;
+    }
+
+    public long getEndAt() {
+        return endAt;
+    }
+
+    public long getStartAt() {
+        return startAt;
+    }
+
+    public String[] getWorkItemIdentifiers() {
+        return workItemIdentifiers;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public String getResultUrl() {
+        return resultUrl;
+    }
+
+    public String getResultOverview() {
+        return resultOverview;
+    }
+
+    public String getJobUrl() {
+        return jobUrl;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String toString() {
+        return String.format("status:%s;name=%s;identifier=%s;resultOverview=%s", this.getStatus(), this.getName(),
+                this.getIdentifier(), this.getResultOverview());
+    }
+
     public static final class Builder {
         private String name;
         private String identifier;

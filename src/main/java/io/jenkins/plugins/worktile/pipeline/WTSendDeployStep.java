@@ -149,6 +149,7 @@ public class WTSendDeployStep extends Step implements Serializable {
 
             try {
                 session.createDeploy(entity);
+                log.info("create deploy success: " + entity.releaseName);
             } catch (Exception exception) {
                 log.error(String.format("Create deploy(%s) error; stack: %s ", this.step.releaseName,
                         exception.getMessage()));
