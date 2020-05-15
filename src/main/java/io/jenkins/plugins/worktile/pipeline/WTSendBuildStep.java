@@ -102,16 +102,19 @@ public class WTSendBuildStep extends Step implements Serializable {
                     .withWorkItemIdentifiers(WTHelper.resolveWorkItemsFromPipelineStep(build).toArray(new String[0]))
                     .withEndAt(WTHelper.toSafeTs(System.currentTimeMillis())).withDuration(build.getDuration());
 
-            List<String> matched = WTHelper.getMatchSet(Pattern.compile(this.step.reviewPattern),
-                    Arrays.asList(build.getLog().split("\n")), true, true);
-            builder.withResultOvervier(matched.size() > 0 ? matched.get(0) : "");
+            if (this.step.reviewPattern != null) {
+                List<String> matched = WTHelper.getMatchSet(Pattern.compile(this.step.reviewPattern),
+                        Arrays.asList(build.getLog().split("\n")), true, true);
+                builder.withResultOvervier(matched.size() > 0 ? matched.get(0) : null);
+            }
 
             WTRestSession session = new WTRestSession();
             WTBuildEntity entity = builder.build();
             try {
                 session.createBuild(entity);
+                logger.info(entity.toString());
             } catch (Exception exception) {
-                logger.info(String.format("Create build(%s) error; stack", exception.getMessage()));
+                logger.error("create build error : " + exception.getMessage());
                 if (this.step.failOnError) {
                     return false;
                 }
