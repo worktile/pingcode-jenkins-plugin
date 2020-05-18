@@ -26,14 +26,12 @@ public class TokenResolver {
   }
 
   public WTTokenEntity resolveToken() throws IOException, WTRestException {
-
     String path =
         String.format(
             this.baseURL
                 + "/auth/token?grant_type=client_credentials&client_id=%s&client_secret=%s",
             this.clientId,
             this.clientSecret);
-
     String json = this.apiConnection.executeGet(path);
     return gson.fromJson(json, WTTokenEntity.class);
   }

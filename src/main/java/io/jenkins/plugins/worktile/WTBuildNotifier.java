@@ -1,11 +1,10 @@
 package io.jenkins.plugins.worktile;
 
-import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -13,6 +12,7 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
 import io.jenkins.plugins.worktile.service.WTRestService;
+import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -22,7 +22,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 
-public class WTBuildNotifier extends Notifier {
+public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
 
   private String overview;
 
@@ -32,38 +32,17 @@ public class WTBuildNotifier extends Notifier {
   }
 
   @Override
-  public boolean perform(
-      @Nonnull AbstractBuild<?, ?> run, @Nonnull Launcher launcher, @NotNull BuildListener listener)
+  public void perform(
+      @Nonnull Run<?, ?> run,
+      @Nonnull FilePath workspace,
+      @Nonnull Launcher launcher,
+      @Nonnull TaskListener listener)
       throws IOException, InternalError {
     this.createBuild(run, listener);
-    return true;
   }
 
-  private void createBuild(@Nonnull AbstractBuild<?, ?> run, @Nonnull TaskListener listener)
-      throws IOException {
-    String status = WTHelper.statusOfRun(run);
-    WTBuildEntity entity = new WTBuildEntity();
-    entity.name = run.getFullDisplayName();
-    entity.identifier = run.getId();
-    entity.jobUrl = run.getAbsoluteUrl();
-    entity.resultUrl = run.getAbsoluteUrl() + "console";
-    entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());
-    entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
-    entity.duration = run.getDuration();
-    entity.status =
-        status.equals("success")
-            ? WTBuildEntity.Status.Success.getValue()
-            : WTBuildEntity.Status.Failure.getValue();
-    entity.resultOverview = WTHelper.resolveOverview(run, getOverview());
-
-    try {
-      EnvVars vars = run.getEnvironment(TaskListener.NULL);
-      entity.workItemIdentifiers =
-          WTHelper.extractWorkItemsFromSCM(run, vars).toArray(new String[0]);
-    } catch (Exception exception) {
-      // do nothing
-    }
-
+  private void createBuild(Run<?, ?> run, @Nonnull TaskListener listener) throws IOException {
+    WTBuildEntity entity = WTBuildEntity.from(run, getOverview());
     WTRestService service = new WTRestService();
     try {
       service.createBuild(entity);
@@ -105,8 +84,9 @@ public class WTBuildNotifier extends Notifier {
     }
 
     @Override
-    public WTBuildNotifier newInstance(
-        @NotNull StaplerRequest request, @NotNull JSONObject formData) throws FormException {
+    public WTBuildNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData)
+        throws FormException {
+      assert request != null;
       return request.bindJSON(WTBuildNotifier.class, formData);
     }
   }

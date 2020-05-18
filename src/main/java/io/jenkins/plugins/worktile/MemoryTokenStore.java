@@ -5,7 +5,7 @@ import io.jenkins.plugins.worktile.model.WTTokenEntity;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MemoryTokeStore {
+public class MemoryTokenStore {
 
   public static final Map<String, WTTokenEntity> store = new HashMap<>();
 

@@ -5,7 +5,6 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
 import io.jenkins.plugins.worktile.model.WTItemPattern;
-import jenkins.scm.RunWithSCM;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -62,8 +61,7 @@ public class WTHelper {
   }
 
   public static long toSafeTs(long time) {
-      final int round = Math.round(time / 1000);
-      return round;
+    return Math.round(Math.floorDiv(time, 1000));
   }
 
   public static String renderStringByEnvVars(String template, EnvVars vars) {
@@ -98,16 +96,18 @@ public class WTHelper {
           } else {
             set.add(matcher.group());
           }
-          if (breakFirstMatch) break;
+          if (breakFirstMatch) {
+            break;
+          }
         }
       }
     }
     return new ArrayList<>(set);
   }
 
-  public static List<String> extractWorkItemsFromSCM(RunWithSCM<?, ?> scm, EnvVars vars) {
+  public static List<String> extractWorkItems(
+      List<ChangeLogSet<? extends ChangeLogSet.Entry>> changeLogSets, EnvVars vars) {
     List<String> array = new ArrayList<>();
-    List<ChangeLogSet<? extends ChangeLogSet.Entry>> changeLogSets = scm.getChangeSets();
     changeLogSets.forEach(
         changeLogSet -> {
           for (Object change : changeLogSet) {
@@ -118,7 +118,9 @@ public class WTHelper {
           }
         });
     String branch = vars.get("GIT_BRANCH");
-    array.add(branch);
+    if (branch != null) {
+      array.add(branch);
+    }
     return getWorkItems(array);
   }
 

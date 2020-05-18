@@ -15,7 +15,7 @@ import java.io.IOException;
 
 public class WTRestApiService implements BuildClient, DeployClient, EnvironmentClient {
 
-    private final Gson gson =
+  private final Gson gson =
       new GsonBuilder()
           .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
           .create();

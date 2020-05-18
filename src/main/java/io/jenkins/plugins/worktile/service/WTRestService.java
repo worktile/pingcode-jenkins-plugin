@@ -1,6 +1,6 @@
 package io.jenkins.plugins.worktile.service;
 
-import io.jenkins.plugins.worktile.MemoryTokeStore;
+import io.jenkins.plugins.worktile.MemoryTokenStore;
 import io.jenkins.plugins.worktile.WTGlobalConfiguration;
 import io.jenkins.plugins.worktile.WTHelper;
 import io.jenkins.plugins.worktile.model.*;
@@ -33,20 +33,20 @@ public class WTRestService {
     this.tokenService = new WTTokenService(baseURL, clientId, clientSecret);
   }
 
-  public WTTokenEntity doConnectTest() throws IOException, WTRestException {
-    return tokenService.getTokenFromApi();
+  public void doConnectTest() throws IOException, WTRestException {
+    tokenService.getTokenFromApi();
   }
 
-  public Object createBuild(WTBuildEntity entity) throws IOException, WTRestException {
-    return this.getWTRestService().createBuild(entity);
+  public void createBuild(WTBuildEntity entity) throws IOException, WTRestException {
+    this.getWTRestService().createBuild(entity);
   }
 
   private WTRestApiService getWTRestService() {
-    WTTokenEntity token = MemoryTokeStore.get(clientId, clientSecret);
+    WTTokenEntity token = MemoryTokenStore.get(clientId, clientSecret);
     if (token == null || token.isExpired()) {
       try {
         token = tokenService.getTokenFromApi();
-        boolean putResult = MemoryTokeStore.put(clientId, clientSecret, token);
+        boolean putResult = MemoryTokenStore.put(clientId, clientSecret, token);
         log.info("[INFO]: put token " + putResult);
       } catch (Exception e) {
         log.warning("[ERROR]: get token from api error " + e.getMessage());
@@ -55,8 +55,8 @@ public class WTRestService {
     return new WTRestApiService(baseURL, Objects.requireNonNull(token).accessToken);
   }
 
-  public Object createDeploy(WTDeployEntity entity) throws IOException, WTRestException {
-    return this.getWTRestService().createDeploy(entity);
+  public void createDeploy(WTDeployEntity entity) throws IOException, WTRestException {
+    this.getWTRestService().createDeploy(entity);
   }
 
   public WTPaginationResponse<WTEnvironmentSchema> listEnvironments()

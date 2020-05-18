@@ -1,6 +1,5 @@
 package io.jenkins.plugins.worktile;
 
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -43,15 +42,6 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
     setEnvironment(environment);
   }
 
-  public String getEnvironment() {
-    return environment;
-  }
-
-  @DataBoundSetter
-  public void setEnvironment(String environment) {
-    this.environment = environment;
-  }
-
   @Override
   public void perform(
       @NotNull Run<?, ?> run,
@@ -59,22 +49,8 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
       @NotNull Launcher launcher,
       @NotNull TaskListener listener) {
 
-    WTDeployEntity entity = new WTDeployEntity();
-    String status = WTHelper.statusOfRun(run);
-
-    entity.status =
-        status.equals("success")
-            ? WTDeployEntity.Status.Deployed.getDeploy()
-            : WTDeployEntity.Status.NotDeployed.getDeploy();
-
-    try {
-      EnvVars envVars = run.getEnvironment(TaskListener.NULL);
-      entity.releaseName = envVars.expand(getReleaseName());
-      entity.releaseUrl = getReleaseName() != null ? envVars.expand(getReleaseName()) : null;
-    } catch (Exception e) {
-      entity.releaseName = getReleaseName();
-      entity.releaseUrl = getReleaseUrl();
-    }
+    WTDeployEntity entity =
+        WTDeployEntity.from(run, getReleaseName(), getReleaseUrl(), getEnvironment());
 
     WTRestService session = new WTRestService();
     try {
@@ -95,6 +71,15 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
 
   public String getReleaseUrl() {
     return releaseUrl;
+  }
+
+  public String getEnvironment() {
+    return environment;
+  }
+
+  @DataBoundSetter
+  public void setEnvironment(String environment) {
+    this.environment = environment;
   }
 
   @DataBoundSetter

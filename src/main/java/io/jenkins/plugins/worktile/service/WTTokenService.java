@@ -8,7 +8,6 @@ import io.jenkins.plugins.worktile.resolver.TokenResolver;
 import java.io.IOException;
 
 public class WTTokenService implements TokenClient {
-
   private final TokenResolver tokenResolver;
 
   public WTTokenService(String baseURL, String clientId, String clientSecret) {

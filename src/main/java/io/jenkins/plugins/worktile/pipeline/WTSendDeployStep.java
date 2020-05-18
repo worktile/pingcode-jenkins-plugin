@@ -7,7 +7,6 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import io.jenkins.plugins.worktile.WTHelper;
 import io.jenkins.plugins.worktile.WTLogger;
 import io.jenkins.plugins.worktile.model.WTDeployEntity;
 import io.jenkins.plugins.worktile.model.WTEnvironmentEntity;
@@ -111,24 +110,6 @@ public class WTSendDeployStep extends Step implements Serializable {
       TaskListener listener = getContext().get(TaskListener.class);
       WTLogger log = new WTLogger(listener);
 
-      WTDeployEntity entity = new WTDeployEntity();
-
-      String status = WTHelper.statusOfRun(run);
-      entity.status =
-          status.equals("success")
-              ? WTDeployEntity.Status.Deployed.getDeploy()
-              : WTDeployEntity.Status.NotDeployed.getDeploy();
-
-      String releaseUrl = this.step.getReleaseURL();
-      try {
-        EnvVars envVars = run.getEnvironment(TaskListener.NULL);
-        entity.releaseName = envVars.expand(run.getFullDisplayName());
-        entity.releaseUrl = releaseUrl != null ? envVars.expand(releaseUrl) : null;
-      } catch (Exception e) {
-        entity.releaseName = run.getFullDisplayName();
-        entity.releaseUrl = releaseUrl;
-      }
-
       String envId = null;
       try {
         envId = handleEnvName(this.step.environmentName);
@@ -146,15 +127,12 @@ public class WTSendDeployStep extends Step implements Serializable {
           throw new AbortException("create deploy environment error " + exception.getMessage());
         }
       }
-      entity.envId = envId;
-      entity.duration = run.getDuration();
-      entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());
-      entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
-      entity.duration = run.getDuration();
 
-      WTRestService session = new WTRestService();
+      WTDeployEntity entity =
+          WTDeployEntity.from(run, this.step.getReleaseName(), this.step.getReleaseURL(), envId);
+      WTRestService service = new WTRestService();
       try {
-        session.createDeploy(entity);
+        service.createDeploy(entity);
       } catch (Exception exception) {
         log.error(
             String.format(
@@ -164,7 +142,6 @@ public class WTSendDeployStep extends Step implements Serializable {
           throw new AbortException("create worktile deploy error " + exception.getMessage());
         }
       }
-
       return true;
     }
 
@@ -180,7 +157,6 @@ public class WTSendDeployStep extends Step implements Serializable {
 
   @Extension
   public static class DescriptorImpl extends StepDescriptor {
-
     @Override
     public Set<Class<?>> getRequiredContext() {
       return ImmutableSet.of(Run.class, EnvVars.class, TaskListener.class, FilePath.class);

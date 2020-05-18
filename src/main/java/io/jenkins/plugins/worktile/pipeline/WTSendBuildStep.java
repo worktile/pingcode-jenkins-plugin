@@ -7,7 +7,6 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import io.jenkins.plugins.worktile.WTHelper;
 import io.jenkins.plugins.worktile.WTLogger;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
 import io.jenkins.plugins.worktile.service.WTRestService;
@@ -83,33 +82,10 @@ public class WTSendBuildStep extends Step implements Serializable {
     @Override
     public Boolean run() throws Exception {
       WorkflowRun run = getContext().get(WorkflowRun.class);
-      assert run != null;
       TaskListener listener = getContext().get(TaskListener.class);
       WTLogger logger = new WTLogger(listener);
 
-      String status = WTHelper.statusOfRun(run);
-      WTBuildEntity entity = new WTBuildEntity();
-      entity.name = run.getFullDisplayName();
-      entity.identifier = run.getId();
-      entity.jobUrl = run.getAbsoluteUrl();
-      entity.resultUrl = run.getAbsoluteUrl() + "console";
-      entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());
-      entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
-      entity.duration = run.getDuration();
-      entity.status =
-          status.equals("success")
-              ? WTBuildEntity.Status.Success.getValue()
-              : WTBuildEntity.Status.Failure.getValue();
-      entity.resultOverview = WTHelper.resolveOverview(run, this.step.getReviewPattern());
-
-      try {
-        EnvVars vars = run.getEnvironment(TaskListener.NULL);
-        entity.workItemIdentifiers =
-            WTHelper.extractWorkItemsFromSCM(run, vars).toArray(new String[0]);
-      } catch (Exception exception) {
-        entity.workItemIdentifiers = new String[0];
-      }
-
+      WTBuildEntity entity = WTBuildEntity.from(run, this.step.reviewPattern);
       WTRestService service = new WTRestService();
       try {
         service.createBuild(entity);
