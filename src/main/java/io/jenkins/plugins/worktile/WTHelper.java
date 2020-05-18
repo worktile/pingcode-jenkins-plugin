@@ -4,6 +4,7 @@ import hudson.EnvVars;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
+import io.jenkins.plugins.worktile.model.WTItemPattern;
 import jenkins.scm.RunWithSCM;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -23,7 +24,6 @@ import java.util.regex.Pattern;
 public class WTHelper {
 
   public static final Logger logger = Logger.getLogger(WTHelper.class.getName());
-  public static final Pattern WORKITEM_PATTERN = Pattern.compile("#[^/]*([A-Za-z0-9_])+-([0-9])+");
 
   public static boolean isURL(String url) {
     try {
@@ -43,7 +43,7 @@ public class WTHelper {
   }
 
   public static String apiV1(String endpoint) {
-    return new StringBuilder(endpoint).append("/v1").toString();
+    return endpoint + "/v1";
   }
 
   public static String md5(String source) throws NoSuchAlgorithmException {
@@ -62,7 +62,8 @@ public class WTHelper {
   }
 
   public static long toSafeTs(long time) {
-    return Math.round(time / 1000);
+      final int round = Math.round(time / 1000);
+      return round;
   }
 
   public static String renderStringByEnvVars(String template, EnvVars vars) {
@@ -123,7 +124,7 @@ public class WTHelper {
 
   public static List<String> getWorkItems(List<String> messages) {
     List<String> workItems =
-        WTHelper.getMatchSet(WTHelper.WORKITEM_PATTERN, messages, false, false);
+        WTHelper.getMatchSet(WTItemPattern.branchPattern, messages, false, false);
     HashSet<String> set = new HashSet<>();
     for (String item : workItems) {
       set.add(item.substring(1));

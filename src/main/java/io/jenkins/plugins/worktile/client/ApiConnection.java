@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 public class ApiConnection {
-  private final String accessToken;
+  private final transient String accessToken;
   private final Gson gson =
       new GsonBuilder()
           .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)

@@ -4,11 +4,8 @@ import io.jenkins.plugins.worktile.model.WTTokenEntity;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
-public class MemoryTokenCache {
-
-  public static final Logger logger = Logger.getLogger(MemoryTokenCache.class.getName());
+public class MemoryTokeStore {
 
   public static final Map<String, WTTokenEntity> store = new HashMap<>();
 
@@ -26,7 +23,6 @@ public class MemoryTokenCache {
       String key = WTHelper.md5(clientId + clientSecret);
       return store.get(key);
     } catch (Exception exception) {
-      logger.info("get wtTokenEntity error" + exception.getMessage());
       return null;
     }
   }

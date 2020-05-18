@@ -13,7 +13,7 @@ import io.jenkins.plugins.worktile.model.WTDeployEntity;
 import io.jenkins.plugins.worktile.model.WTEnvironmentEntity;
 import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
 import io.jenkins.plugins.worktile.model.WTRestException;
-import io.jenkins.plugins.worktile.service.WTRestSession;
+import io.jenkins.plugins.worktile.service.WTRestService;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.*;
@@ -152,7 +152,7 @@ public class WTSendDeployStep extends Step implements Serializable {
       entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
       entity.duration = run.getDuration();
 
-      WTRestSession session = new WTRestSession();
+      WTRestService session = new WTRestService();
       try {
         session.createDeploy(entity);
       } catch (Exception exception) {
@@ -169,10 +169,10 @@ public class WTSendDeployStep extends Step implements Serializable {
     }
 
     public String handleEnvName(String name) throws IOException, WTRestException {
-      WTRestSession session = new WTRestSession();
-      WTEnvironmentSchema schema = session.getEnvironmentByName(name);
+      WTRestService service = new WTRestService();
+      WTEnvironmentSchema schema = service.getEnvironmentByName(name);
       if (schema == null) {
-        schema = session.createEnvironment(new WTEnvironmentEntity(name));
+        schema = service.createEnvironment(new WTEnvironmentEntity(name));
       }
       return schema.id;
     }
@@ -191,6 +191,8 @@ public class WTSendDeployStep extends Step implements Serializable {
       return "wtSendDeploy";
     }
 
+    @org.jetbrains.annotations.NotNull
+    @Override
     public String getDisplayName() {
       return "send deploy result to worktile";
     }

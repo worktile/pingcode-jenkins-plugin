@@ -9,7 +9,7 @@ import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import io.jenkins.plugins.worktile.resolver.SecretResolver;
-import io.jenkins.plugins.worktile.service.WTRestSession;
+import io.jenkins.plugins.worktile.service.WTRestService;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -129,7 +129,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     if (!secret.isPresent()) {
       return FormValidation.error("secret not found or wrong");
     }
-    WTRestSession session = new WTRestSession(WTHelper.apiV1(endpoint), clientId, secret.get());
+    WTRestService session = new WTRestService(WTHelper.apiV1(endpoint), clientId, secret.get());
 
     try {
       session.doConnectTest();

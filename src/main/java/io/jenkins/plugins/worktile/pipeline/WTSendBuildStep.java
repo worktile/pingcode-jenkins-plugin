@@ -10,7 +10,7 @@ import hudson.model.TaskListener;
 import io.jenkins.plugins.worktile.WTHelper;
 import io.jenkins.plugins.worktile.WTLogger;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
-import io.jenkins.plugins.worktile.service.WTRestSession;
+import io.jenkins.plugins.worktile.service.WTRestService;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +50,6 @@ public class WTSendBuildStep extends Step implements Serializable {
     return buildResult;
   }
 
-  @NotNull
   @DataBoundSetter
   public void setBuildResult(String buildResult) {
     this.buildResult = buildResult;
@@ -111,9 +110,9 @@ public class WTSendBuildStep extends Step implements Serializable {
         entity.workItemIdentifiers = new String[0];
       }
 
-      WTRestSession session = new WTRestSession();
+      WTRestService service = new WTRestService();
       try {
-        session.createBuild(entity);
+        service.createBuild(entity);
       } catch (Exception exception) {
         logger.error("create build error : " + exception.getMessage());
         if (this.step.failOnError) {

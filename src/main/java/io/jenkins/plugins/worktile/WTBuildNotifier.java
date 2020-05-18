@@ -12,7 +12,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import io.jenkins.plugins.worktile.model.WTBuildEntity;
-import io.jenkins.plugins.worktile.service.WTRestSession;
+import io.jenkins.plugins.worktile.service.WTRestService;
 import net.sf.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -64,9 +64,9 @@ public class WTBuildNotifier extends Notifier {
       // do nothing
     }
 
-    WTRestSession session = new WTRestSession();
+    WTRestService service = new WTRestService();
     try {
-      session.createBuild(entity);
+      service.createBuild(entity);
       listener.getLogger().println("Send build data to worktile open api");
     } catch (Exception error) {
       listener.getLogger().println("Create worktile build error " + error.getMessage());

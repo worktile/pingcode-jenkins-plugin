@@ -15,7 +15,7 @@ import hudson.util.ListBoxModel;
 import io.jenkins.plugins.worktile.model.WTDeployEntity;
 import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
 import io.jenkins.plugins.worktile.model.WTPaginationResponse;
-import io.jenkins.plugins.worktile.service.WTRestSession;
+import io.jenkins.plugins.worktile.service.WTRestService;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
@@ -52,15 +52,6 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
     this.environment = environment;
   }
 
-  public String getReleaseName() {
-    return releaseName;
-  }
-
-  @DataBoundSetter
-  public void setReleaseName(final String releaseName) {
-    this.releaseName = releaseName;
-  }
-
   @Override
   public void perform(
       @NotNull Run<?, ?> run,
@@ -76,22 +67,30 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
             ? WTDeployEntity.Status.Deployed.getDeploy()
             : WTDeployEntity.Status.NotDeployed.getDeploy();
 
-    String releaseUrl = this.getReleaseUrl();
     try {
       EnvVars envVars = run.getEnvironment(TaskListener.NULL);
-      entity.releaseName = envVars.expand(run.getFullDisplayName());
-      entity.releaseUrl = releaseUrl != null ? envVars.expand(releaseUrl) : null;
+      entity.releaseName = envVars.expand(getReleaseName());
+      entity.releaseUrl = getReleaseName() != null ? envVars.expand(getReleaseName()) : null;
     } catch (Exception e) {
-      entity.releaseName = run.getFullDisplayName();
-      entity.releaseUrl = releaseUrl;
+      entity.releaseName = getReleaseName();
+      entity.releaseUrl = getReleaseUrl();
     }
 
-    WTRestSession session = new WTRestSession();
+    WTRestService session = new WTRestService();
     try {
       session.createDeploy(entity);
     } catch (Exception error) {
       listener.getLogger().println("create deploy failure " + error.getMessage());
     }
+  }
+
+  public String getReleaseName() {
+    return releaseName;
+  }
+
+  @DataBoundSetter
+  public void setReleaseName(final String releaseName) {
+    this.releaseName = releaseName;
   }
 
   public String getReleaseUrl() {
@@ -142,9 +141,9 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
 
     public ListBoxModel doFillEnvironmentItems() {
       final ListBoxModel items = new ListBoxModel();
-      WTRestSession session = new WTRestSession();
+      WTRestService service = new WTRestService();
       try {
-        WTPaginationResponse<WTEnvironmentSchema> schemas = session.listEnvironments();
+        WTPaginationResponse<WTEnvironmentSchema> schemas = service.listEnvironments();
         for (WTEnvironmentSchema schema : schemas.values) {
           items.add(schema.name, schema.id);
         }
