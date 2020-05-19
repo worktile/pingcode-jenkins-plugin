@@ -35,9 +35,9 @@ public class WTBuildEntity {
     }
     entity.name = run.getFullDisplayName();
     entity.identifier = run.getId();
-    entity.jobUrl = run.getAbsoluteUrl();
+    entity.jobUrl = run.getUrl();
     entity.resultOverview = WTHelper.resolveOverview(run, pattern);
-    entity.resultUrl = run.getAbsoluteUrl() + "console";
+    entity.resultUrl = run.getUrl() + "console";
     entity.status =
         status.equals("success") ? Status.Success.getValue() : Status.Failure.getValue();
     entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());

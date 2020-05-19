@@ -99,7 +99,6 @@ public class WTSendDeployStep extends Step implements Serializable {
 
     public WTSendDeployStepExecution(StepContext context, WTSendDeployStep step) {
       super(context);
-
       this.step = step;
     }
 
@@ -110,9 +109,10 @@ public class WTSendDeployStep extends Step implements Serializable {
       TaskListener listener = getContext().get(TaskListener.class);
       WTLogger log = new WTLogger(listener);
 
+      WTRestService service = new WTRestService();
       String envId = null;
       try {
-        envId = handleEnvName(this.step.environmentName);
+        envId = handleEnvName(this.step.environmentName, service);
       } catch (Exception exception) {
         log.error(
             String.format(
@@ -130,7 +130,6 @@ public class WTSendDeployStep extends Step implements Serializable {
 
       WTDeployEntity entity =
           WTDeployEntity.from(run, this.step.getReleaseName(), this.step.getReleaseURL(), envId);
-      WTRestService service = new WTRestService();
       try {
         service.createDeploy(entity);
       } catch (Exception exception) {
@@ -145,8 +144,8 @@ public class WTSendDeployStep extends Step implements Serializable {
       return true;
     }
 
-    public String handleEnvName(String name) throws IOException, WTRestException {
-      WTRestService service = new WTRestService();
+    public String handleEnvName(String name, WTRestService service)
+        throws IOException, WTRestException {
       WTEnvironmentSchema schema = service.getEnvironmentByName(name);
       if (schema == null) {
         schema = service.createEnvironment(new WTEnvironmentEntity(name));
