@@ -1,5 +1,6 @@
 package io.jenkins.plugins.worktile.model;
 
+import com.google.gson.Gson;
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
@@ -38,6 +39,7 @@ public class WTDeployEntity {
     entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());
     entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
     entity.duration = run.getDuration();
+
     WorkItemResolver resolver = null;
     if (run instanceof AbstractBuild<?, ?>) {
       resolver = new WorkItemResolver((AbstractBuild<?, ?>) run, vars);
@@ -50,13 +52,18 @@ public class WTDeployEntity {
     return entity;
   }
 
+  public String toString() {
+    Gson gson = new Gson();
+    return gson.toJson(this);
+  }
+
   public enum Status {
     Deployed("deployed"),
     NotDeployed("not_deployed");
 
     private final String deploy;
 
-    private Status(String deploy) {
+    Status(String deploy) {
       this.deploy = deploy;
     }
 

@@ -26,7 +26,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.util.logging.Logger;
 
 public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
-  public static final Logger logger = Logger.getLogger(WTDeployNotifier.class.getName());
+  private static final Logger logger = Logger.getLogger(WTDeployNotifier.class.getName());
 
   private String environment;
 
@@ -49,14 +49,18 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
       @NotNull Launcher launcher,
       @NotNull TaskListener listener) {
 
+    WTLogger wtLogger = new WTLogger(listener);
+
     WTDeployEntity entity =
         WTDeployEntity.from(run, getReleaseName(), getReleaseUrl(), getEnvironment());
 
     WTRestService session = new WTRestService();
+    wtLogger.info("Will send data to worktile: " + entity.toString());
     try {
       session.createDeploy(entity);
+      wtLogger.info("Send to to worktile successfully");
     } catch (Exception error) {
-      listener.getLogger().println("create deploy failure " + error.getMessage());
+      wtLogger.error(error.getMessage());
     }
   }
 

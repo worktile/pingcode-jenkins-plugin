@@ -87,12 +87,14 @@ public class WTSendBuildStep extends Step implements Serializable {
 
       WTBuildEntity entity = WTBuildEntity.from(run, this.step.reviewPattern);
       WTRestService service = new WTRestService();
+      logger.info("Will send data to worktile: " + entity.toString());
       try {
         service.createBuild(entity);
+        logger.info("Send to to worktile successfully");
       } catch (Exception exception) {
-        logger.error("create build error : " + exception.getMessage());
+        logger.error(exception.getMessage());
         if (this.step.failOnError) {
-          throw new AbortException("create build error : " + exception.getMessage());
+          throw new AbortException(exception.getMessage());
         }
       }
       return true;

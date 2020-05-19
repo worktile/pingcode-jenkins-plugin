@@ -107,38 +107,34 @@ public class WTSendDeployStep extends Step implements Serializable {
       WorkflowRun run = getContext().get(WorkflowRun.class);
       assert run != null;
       TaskListener listener = getContext().get(TaskListener.class);
-      WTLogger log = new WTLogger(listener);
+      WTLogger wtLogger = new WTLogger(listener);
 
       WTRestService service = new WTRestService();
       String envId = null;
       try {
         envId = handleEnvName(this.step.environmentName, service);
       } catch (Exception exception) {
-        log.error(
-            String.format(
-                "Create environment(%s) error, message %s",
-                this.step.environmentName, exception.getMessage()));
-
+        wtLogger.error(exception.getMessage());
         if (exception instanceof WTRestException) {
           if (!((WTRestException) exception).getCode().equals("100105") && this.step.failOnError) {
-            throw new AbortException("create deploy environment error");
+            throw new AbortException(exception.getMessage());
           }
         } else if (this.step.failOnError) {
-          throw new AbortException("create deploy environment error " + exception.getMessage());
+          throw new AbortException(exception.getMessage());
         }
       }
 
       WTDeployEntity entity =
           WTDeployEntity.from(run, this.step.getReleaseName(), this.step.getReleaseURL(), envId);
+
+      wtLogger.info("Will send data to worktile: " + entity.toString());
       try {
         service.createDeploy(entity);
+        wtLogger.info("Send to to worktile successfully");
       } catch (Exception exception) {
-        log.error(
-            String.format(
-                "Create deploy(%s) error; stack: %s ",
-                this.step.releaseName, exception.getMessage()));
+        wtLogger.error(exception.getMessage());
         if (this.step.failOnError) {
-          throw new AbortException("create worktile deploy error " + exception.getMessage());
+          throw new AbortException(exception.getMessage());
         }
       }
       return true;

@@ -3,7 +3,6 @@ package io.jenkins.plugins.worktile;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -22,10 +21,8 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
-  private final Logger logger = Logger.getLogger(WTBuildNotifier.class.getName());
 
   private String overview;
 
@@ -45,14 +42,16 @@ public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
   }
 
   private void createBuild(Run<?, ?> run, @Nonnull TaskListener listener) throws IOException {
-    logger.info(((AbstractBuild) run).getChangeSets() + "");
+    WTLogger logger = new WTLogger(listener);
     WTBuildEntity entity = WTBuildEntity.from(run, getOverview());
+
     WTRestService service = new WTRestService();
+    logger.info("Will send data to worktile: " + entity.toString());
     try {
       service.createBuild(entity);
-      listener.getLogger().println("Send build data to worktile open api");
+      logger.info("Send to to worktile successfully");
     } catch (Exception error) {
-      listener.getLogger().println("Create worktile build error " + error.getMessage());
+      logger.error(error.getMessage());
     }
   }
 

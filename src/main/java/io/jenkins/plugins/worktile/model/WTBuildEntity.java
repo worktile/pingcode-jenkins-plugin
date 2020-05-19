@@ -1,5 +1,6 @@
 package io.jenkins.plugins.worktile.model;
 
+import com.google.gson.Gson;
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
@@ -32,9 +33,7 @@ public class WTBuildEntity {
     }
     entity.name = run.getFullDisplayName();
     entity.identifier = run.getId();
-    entity.jobUrl = run.getUrl();
     entity.resultOverview = WTHelper.resolveOverview(run, pattern);
-    entity.resultUrl = run.getUrl() + "console";
     entity.status =
         status.equals("success") ? Status.Success.getValue() : Status.Failure.getValue();
     entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());
@@ -44,13 +43,23 @@ public class WTBuildEntity {
     WorkItemResolver resolver = null;
     if (run instanceof AbstractBuild<?, ?>) {
       resolver = new WorkItemResolver((AbstractBuild<?, ?>) run, vars);
+      entity.jobUrl = ((AbstractBuild<?, ?>) run).getProject().getAbsoluteUrl();
+      entity.resultUrl = ((AbstractBuild<?, ?>) run).getProject().getAbsoluteUrl() + run.getNumber() + "/console";
     } else if (run instanceof WorkflowRun) {
       resolver = new WorkItemResolver((WorkflowRun) run, vars);
+      entity.jobUrl = run.getAbsoluteUrl();
+      entity.resultUrl = run.getAbsoluteUrl() + "console";
     }
+
     if (resolver != null) {
       entity.workItemIdentifiers = resolver.resolve().toArray(new String[0]);
     }
     return entity;
+  }
+
+  public String toString() {
+    Gson gson = new Gson();
+    return gson.toJson(this);
   }
 
   public enum Status {
