@@ -16,7 +16,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class WTBuildNotifierTest {
-  @Rule public JenkinsRule jenkinsRule = new JenkinsRule();
 
   @Test
   public void testBuildPerform() throws IOException, InterruptedException {

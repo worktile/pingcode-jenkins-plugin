@@ -3,8 +3,6 @@ package io.jenkins.plugins.worktile;
 import hudson.EnvVars;
 import hudson.model.Result;
 import hudson.model.Run;
-import hudson.scm.ChangeLogSet;
-import io.jenkins.plugins.worktile.model.WTItemPattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -64,13 +62,6 @@ public class WTHelper {
     return Math.round(Math.floorDiv(time, 1000));
   }
 
-  public static String renderStringByEnvVars(String template, EnvVars vars) {
-    HashMap<String, String> map = new HashMap<>();
-    vars.forEach(map::put);
-    StringSubstitutor sub = new StringSubstitutor(map);
-    return sub.replace(template);
-  }
-
   public static String resolveOverview(Run<?, ?> run, String overviewPattern) {
     if (overviewPattern == null) {
       return null;
@@ -88,45 +79,22 @@ public class WTHelper {
       Pattern pattern, List<String> messages, boolean breakFirstMatch, boolean origin) {
     HashSet<String> set = new HashSet<>();
     for (String msg : messages) {
-      if (msg != null) {
-        Matcher matcher = pattern.matcher(msg);
-        if (matcher.find()) {
-          if (origin) {
-            set.add(msg);
-          } else {
-            set.add(matcher.group());
-          }
-          if (breakFirstMatch) {
-            break;
-          }
+      Matcher matcher = pattern.matcher(msg);
+      if (matcher.find()) {
+        if (origin) {
+          set.add(msg);
+        } else {
+          set.add(matcher.group());
+        }
+        if (breakFirstMatch) {
+          break;
         }
       }
     }
     return new ArrayList<>(set);
   }
 
-  public static List<String> extractWorkItems(
-      List<ChangeLogSet<? extends ChangeLogSet.Entry>> changeLogSets, EnvVars vars) {
-    List<String> array = new ArrayList<>();
-    changeLogSets.forEach(
-        changeLogSet -> {
-          for (Object change : changeLogSet) {
-            ChangeLogSet.Entry entry = (ChangeLogSet.Entry) change;
-            String scmMessage = entry.getMsg();
-            logger.info("Scm message = " + scmMessage);
-            array.add(scmMessage);
-          }
-        });
-    String branch = vars.get("GIT_BRANCH");
-    if (branch != null) {
-      array.add(branch);
-    }
-    return getWorkItems(array);
-  }
-
-  public static List<String> getWorkItems(List<String> messages) {
-    List<String> workItems =
-        WTHelper.getMatchSet(WTItemPattern.branchPattern, messages, false, false);
+  public static List<String> formatWorkItems(List<String> workItems) {
     HashSet<String> set = new HashSet<>();
     for (String item : workItems) {
       set.add(item.substring(1));

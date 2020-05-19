@@ -4,12 +4,9 @@ import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.scm.ChangeLogSet;
 import io.jenkins.plugins.worktile.WTHelper;
+import io.jenkins.plugins.worktile.resolver.WorkItemResolver;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class WTBuildEntity {
   public final String provider = "jenkins";
@@ -44,15 +41,15 @@ public class WTBuildEntity {
     entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
     entity.duration = run.getDuration();
 
-    List<ChangeLogSet<? extends ChangeLogSet.Entry>> changeLogSets = new ArrayList<>();
+    WorkItemResolver resolver = null;
     if (run instanceof AbstractBuild<?, ?>) {
-      changeLogSets = ((AbstractBuild<?, ?>) run).getChangeSets();
+      resolver = new WorkItemResolver((AbstractBuild<?, ?>) run, vars);
     } else if (run instanceof WorkflowRun) {
-      changeLogSets = ((WorkflowRun) run).getChangeSets();
+      resolver = new WorkItemResolver((WorkflowRun) run, vars);
     }
-
-    entity.workItemIdentifiers =
-        WTHelper.extractWorkItems(changeLogSets, vars).toArray(new String[0]);
+    if (resolver != null) {
+      entity.workItemIdentifiers = resolver.resolve().toArray(new String[0]);
+    }
     return entity;
   }
 

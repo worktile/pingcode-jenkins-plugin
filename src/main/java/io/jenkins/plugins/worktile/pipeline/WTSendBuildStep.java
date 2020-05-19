@@ -92,7 +92,7 @@ public class WTSendBuildStep extends Step implements Serializable {
       } catch (Exception exception) {
         logger.error("create build error : " + exception.getMessage());
         if (this.step.failOnError) {
-          throw new AbortException();
+          throw new AbortException("create build error : " + exception.getMessage());
         }
       }
       return true;
