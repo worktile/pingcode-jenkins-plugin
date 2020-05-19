@@ -13,7 +13,6 @@ import io.jenkins.plugins.worktile.model.WTEnvironmentEntity;
 import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
 import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.service.WTRestService;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -26,64 +25,20 @@ import java.util.Set;
 public class WTSendDeployStep extends Step implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String releaseName;
-  private String environmentName;
-  private String releaseURL;
-  private String buildResult;
+  private final String releaseName;
 
+  private final String environmentName;
+
+  @DataBoundSetter
+  private String releaseURL;
+
+  @DataBoundSetter
   private boolean failOnError;
 
   @DataBoundConstructor
-  public WTSendDeployStep(
-      @NotNull String releaseName, @NotNull String environmentName, String releaseURL) {
-    setReleaseName(releaseName);
-    setEnvironmentName(environmentName);
-    setReleaseURL(releaseURL);
-  }
-
-  public String getBuildResult() {
-    return buildResult;
-  }
-
-  @DataBoundSetter
-  public void setBuildResult(@NotNull String buildResult) {
-    this.buildResult = buildResult;
-  }
-
-  public boolean isFailOnError() {
-    return failOnError;
-  }
-
-  @DataBoundSetter
-  public void setFailOnError(boolean failOnError) {
-    this.failOnError = failOnError;
-  }
-
-  public String getReleaseURL() {
-    return releaseURL;
-  }
-
-  @DataBoundSetter
-  public void setReleaseURL(String releaseURL) {
-    this.releaseURL = releaseURL;
-  }
-
-  public String getEnvironmentName() {
-    return environmentName;
-  }
-
-  @DataBoundSetter
-  public void setEnvironmentName(@NotNull String environmentName) {
-    this.environmentName = environmentName;
-  }
-
-  public String getReleaseName() {
-    return releaseName;
-  }
-
-  @DataBoundSetter
-  public void setReleaseName(String releaseName) {
+  public WTSendDeployStep(String releaseName, String environmentName) {
     this.releaseName = releaseName;
+    this.environmentName = environmentName;
   }
 
   @Override
@@ -91,8 +46,7 @@ public class WTSendDeployStep extends Step implements Serializable {
     return new WTSendDeployStepExecution(context, this);
   }
 
-  public static class WTSendDeployStepExecution
-      extends SynchronousNonBlockingStepExecution<Boolean> {
+  public static class WTSendDeployStepExecution extends SynchronousNonBlockingStepExecution<Boolean> {
     private static final long serialVersionUID = 1L;
 
     private final WTSendDeployStep step;
@@ -124,8 +78,7 @@ public class WTSendDeployStep extends Step implements Serializable {
         }
       }
 
-      WTDeployEntity entity =
-          WTDeployEntity.from(run, this.step.getReleaseName(), this.step.getReleaseURL(), envId);
+      WTDeployEntity entity = WTDeployEntity.from(run, this.step.releaseName, this.step.releaseURL, envId);
 
       wtLogger.info("Will send data to worktile: " + entity.toString());
       try {
@@ -140,8 +93,7 @@ public class WTSendDeployStep extends Step implements Serializable {
       return true;
     }
 
-    public String handleEnvName(String name, WTRestService service)
-        throws IOException, WTRestException {
+    public String handleEnvName(String name, WTRestService service) throws IOException, WTRestException {
       WTEnvironmentSchema schema = service.getEnvironmentByName(name);
       if (schema == null) {
         schema = service.createEnvironment(new WTEnvironmentEntity(name));
@@ -159,13 +111,13 @@ public class WTSendDeployStep extends Step implements Serializable {
 
     @Override
     public String getFunctionName() {
-      return "wtSendDeploy";
+      return "worktileDeployRecord";
     }
 
     @org.jetbrains.annotations.NotNull
     @Override
     public String getDisplayName() {
-      return "send deploy result to worktile";
+      return "Send deploy result to worktile";
     }
   }
 }

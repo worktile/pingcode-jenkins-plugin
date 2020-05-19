@@ -17,50 +17,19 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.Set;
 
 public class WTSendBuildStep extends Step implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  @DataBoundSetter
   private String reviewPattern;
 
-  private String buildResult;
-
+  @DataBoundSetter
   private boolean failOnError;
 
   @DataBoundConstructor
-  public WTSendBuildStep(String reviewPattern, String buildResult, boolean failOnError) {
-    setBuildResult(Objects.requireNonNull(buildResult));
-    setReviewPattern(reviewPattern);
-    setFailOnError(failOnError);
-  }
-
-  public boolean isFailOnError() {
-    return failOnError;
-  }
-
-  @DataBoundSetter
-  public void setFailOnError(boolean failOnError) {
-    this.failOnError = failOnError;
-  }
-
-  public String getBuildResult() {
-    return buildResult;
-  }
-
-  @DataBoundSetter
-  public void setBuildResult(String buildResult) {
-    this.buildResult = buildResult;
-  }
-
-  public String getReviewPattern() {
-    return reviewPattern;
-  }
-
-  @DataBoundSetter
-  public void setReviewPattern(String reviewPattern) {
-    this.reviewPattern = reviewPattern;
+  public WTSendBuildStep() {
   }
 
   @Override
@@ -68,8 +37,7 @@ public class WTSendBuildStep extends Step implements Serializable {
     return new WTSendBuildStepExecution(context, this);
   }
 
-  public static class WTSendBuildStepExecution
-      extends SynchronousNonBlockingStepExecution<Boolean> {
+  public static class WTSendBuildStepExecution extends SynchronousNonBlockingStepExecution<Boolean> {
     private static final long serialVersionUID = 1L;
 
     private final WTSendBuildStep step;
@@ -110,12 +78,12 @@ public class WTSendBuildStep extends Step implements Serializable {
 
     @Override
     public String getFunctionName() {
-      return "wtSendBuild";
+      return "worktileBuildRecord";
     }
 
     @NotNull
     public String getDisplayName() {
-      return "send build result to worktile";
+      return "Send build result to worktile";
     }
   }
 }
