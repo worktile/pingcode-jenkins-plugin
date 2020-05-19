@@ -7,6 +7,7 @@ import jenkins.scm.RunWithSCM;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -26,7 +27,8 @@ public class WorkItemResolver {
     List<String> array = new ArrayList<>();
     if (getScm() != null) {
       array.addAll(resolveFromSCM());
-    } else if (getEnvVars() != null) {
+    }
+    if (getEnvVars() != null) {
       array.addAll(resolveFromEnv());
     }
     return array;
@@ -56,11 +58,29 @@ public class WorkItemResolver {
       return new ArrayList<>();
     }
     String branch = getEnvVars().get("GIT_BRANCH");
+    String ghprbSourceBranch = getEnvVars().get("ghprbSourceBranch");
+    String ghprbPullTitle = getEnvVars().get("ghprbPullTitle");
 
-    return branch != null
-        ? WTHelper.formatWorkItems(
-            WTHelper.getMatchSet(branchPattern, Collections.singletonList(branch), false, false))
-        : new ArrayList<>();
+    List<String> array = new ArrayList<>();
+    if (branch != null) {
+      array.addAll(
+          WTHelper.formatWorkItems(
+              WTHelper.getMatchSet(
+                  branchPattern, Collections.singletonList(branch), false, false)));
+    }
+    if (ghprbSourceBranch != null) {
+      array.addAll(
+          WTHelper.formatWorkItems(
+              WTHelper.getMatchSet(
+                  branchPattern, Collections.singletonList(ghprbSourceBranch), false, false)));
+    }
+    if (ghprbPullTitle != null) {
+      array.addAll(
+          WTHelper.formatWorkItems(
+              WTHelper.getMatchSet(
+                  messagePattern, Collections.singletonList(ghprbPullTitle), false, false)));
+    }
+    return new ArrayList<>(new HashSet<>(array));
   }
 
   public List<String> resolveFromChangeSet(ChangeLogSet<ChangeLogSet.Entry> logSet) {
