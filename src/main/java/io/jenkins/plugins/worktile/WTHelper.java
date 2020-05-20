@@ -13,8 +13,10 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import hudson.EnvVars;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.TaskListener;
 
 public class WTHelper {
 
@@ -49,7 +51,15 @@ public class WTHelper {
 
   public static String statusOfRun(final Run<?, ?> run) {
     Result result = run.getResult();
-    return result == null ? "failure" : result.toString().toLowerCase();
+    return result == null ? "success" : result.toString().toLowerCase();
+  }
+
+  public static EnvVars safeEnvVars(Run<?, ?> run) {
+    try {
+      return run.getEnvironment(TaskListener.NULL);
+    } catch (Exception e) {
+      return new EnvVars();
+    }
   }
 
   public static long toSafeTs(long time) {

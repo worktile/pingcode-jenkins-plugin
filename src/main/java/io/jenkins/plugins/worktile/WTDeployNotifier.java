@@ -44,16 +44,15 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
   @Override
   public void perform(@NotNull Run<?, ?> run, @NotNull FilePath workspace, @NotNull Launcher launcher,
       @NotNull TaskListener listener) {
-
     WTLogger wtLogger = new WTLogger(listener);
 
     WTDeployEntity entity = WTDeployEntity.from(run, getReleaseName(), getReleaseUrl(), getEnvironment());
 
-    WTRestService session = new WTRestService();
+    WTRestService service = new WTRestService();
     wtLogger.info("Will send data to worktile: " + entity.toString());
     try {
-      session.createDeploy(entity);
-      wtLogger.info("Send to to worktile successfully");
+      service.createDeploy(entity);
+      wtLogger.info("Create worktile deploy record successfully.");
     } catch (Exception error) {
       wtLogger.error(error.getMessage());
     }

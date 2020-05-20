@@ -23,10 +23,13 @@ public class WTSendBuildStep extends Step implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @DataBoundSetter
-  private String reviewPattern;
+  private String overviewPattern;
 
   @DataBoundSetter
   private boolean failOnError;
+
+  @DataBoundSetter
+  private String status;
 
   @DataBoundConstructor
   public WTSendBuildStep() {
@@ -53,12 +56,12 @@ public class WTSendBuildStep extends Step implements Serializable {
       TaskListener listener = getContext().get(TaskListener.class);
       WTLogger logger = new WTLogger(listener);
 
-      WTBuildEntity entity = WTBuildEntity.from(run, this.step.reviewPattern);
+      WTBuildEntity entity = WTBuildEntity.from(run, this.step.status, this.step.overviewPattern);
       WTRestService service = new WTRestService();
       logger.info("Will send data to worktile: " + entity.toString());
       try {
         service.createBuild(entity);
-        logger.info("Send to to worktile successfully");
+        logger.info("Create worktile build record successfully.");
       } catch (Exception exception) {
         logger.error(exception.getMessage());
         if (this.step.failOnError) {

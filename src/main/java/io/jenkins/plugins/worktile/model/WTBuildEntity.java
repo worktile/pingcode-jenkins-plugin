@@ -23,39 +23,36 @@ public class WTBuildEntity {
   public long duration;
 
   public static WTBuildEntity from(Run<?, ?> run, String pattern) {
-    String status = WTHelper.statusOfRun(run);
+    return WTBuildEntity.from(run, null, pattern);
+  }
+
+  public static WTBuildEntity from(Run<?, ?> run, String status, String pattern) {
     WTBuildEntity entity = new WTBuildEntity();
-    EnvVars vars;
-    try {
-      vars = run.getEnvironment(TaskListener.NULL);
-    } catch (Exception e) {
-      vars = new EnvVars();
+
+    if (status == null) {
+      String autoStatus = WTHelper.statusOfRun(run);
+      status = autoStatus.equals("success") ? Status.Success.getValue() : Status.Failure.getValue();
     }
+
+    entity.status = status;
+    EnvVars vars = WTHelper.safeEnvVars(run);
     String fullName = run.getFullDisplayName();
-    int index  = fullName.lastIndexOf("#");
+    int index = fullName.lastIndexOf("#");
     entity.name = fullName.substring(0, index).trim();
     entity.identifier = run.getId();
     entity.resultOverview = WTHelper.resolveOverview(run, pattern);
-    entity.status =
-        status.equals("success") ? Status.Success.getValue() : Status.Failure.getValue();
     entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());
     entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
     entity.duration = run.getDuration();
 
-    WorkItemResolver resolver = null;
     if (run instanceof AbstractBuild<?, ?>) {
-      resolver = new WorkItemResolver((AbstractBuild<?, ?>) run, vars);
       entity.jobUrl = ((AbstractBuild<?, ?>) run).getProject().getAbsoluteUrl();
       entity.resultUrl = ((AbstractBuild<?, ?>) run).getProject().getAbsoluteUrl() + run.getNumber() + "/console";
     } else if (run instanceof WorkflowRun) {
-      resolver = new WorkItemResolver((WorkflowRun) run, vars);
       entity.jobUrl = run.getAbsoluteUrl();
       entity.resultUrl = run.getAbsoluteUrl() + "console";
     }
-
-    if (resolver != null) {
-      entity.workItemIdentifiers = resolver.resolve().toArray(new String[0]);
-    }
+    entity.workItemIdentifiers = WorkItemResolver.create(run, vars).resolve().toArray(new String[0]);
     return entity;
   }
 
@@ -65,8 +62,8 @@ public class WTBuildEntity {
   }
 
   public enum Status {
-    Success("success"),
-    Failure("failure");
+    Success("success"), Failure("failure");
+
     private final String value;
 
     Status(String status) {

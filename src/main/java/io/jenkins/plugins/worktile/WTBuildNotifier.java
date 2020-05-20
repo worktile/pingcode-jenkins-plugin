@@ -45,7 +45,7 @@ public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
     logger.info("Will send data to worktile: " + entity.toString());
     try {
       service.createBuild(entity);
-      logger.info("Send to to worktile successfully");
+      logger.info("Create worktile build record successfully.");
     } catch (Exception error) {
       logger.error(error.getMessage());
     }
