@@ -92,67 +92,50 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     return true;
   }
 
-  public FormValidation doCheckEndpoint(
-      @QueryParameter(value = "endpoint", fixEmpty = true) String endpoint) {
+  public FormValidation doCheckEndpoint(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint) {
     if (WTHelper.isNotBlank(endpoint) && !WTHelper.isURL(endpoint)) {
       return FormValidation.error("endpoint format error");
     }
     return FormValidation.ok();
   }
 
-  public FormValidation doCheckClientId(
-      @QueryParameter(value = "clientId", fixEmpty = true) String clientId) {
-    return WTHelper.isNotBlank(clientId)
-        ? FormValidation.ok()
-        : FormValidation.error("client id can not be empty");
+  public FormValidation doCheckClientId(@QueryParameter(value = "clientId", fixEmpty = true) String clientId) {
+    return WTHelper.isNotBlank(clientId) ? FormValidation.ok() : FormValidation.error("client id can not be empty");
   }
 
   public FormValidation doCheckCredentialsId(
       @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) {
-    return WTHelper.isNotBlank(credentialsId)
-        ? FormValidation.ok()
+    return WTHelper.isNotBlank(credentialsId) ? FormValidation.ok()
         : FormValidation.error("credentialsId can not be empty");
   }
 
-  public FormValidation doTestConnection(
-      @QueryParameter(value = "endpoint", fixEmpty = true) String endpoint,
+  public FormValidation doTestConnection(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint,
       @QueryParameter(value = "clientId", fixEmpty = true) String clientId,
-      @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId)
-      throws IOException {
+      @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) throws IOException {
 
-    if (StringUtils.isEmpty(credentialsId)
-        || StringUtils.isEmpty(endpoint)
-        || StringUtils.isEmpty(clientId)) {
+    if (StringUtils.isEmpty(credentialsId) || StringUtils.isEmpty(endpoint) || StringUtils.isEmpty(clientId)) {
       return FormValidation.error("error");
     }
     Optional<String> secret = SecretResolver.getSecretOf(credentialsId);
     if (!secret.isPresent()) {
       return FormValidation.error("secret not found or wrong");
     }
-    WTRestService session = new WTRestService(WTHelper.apiV1(endpoint), clientId, secret.get());
+    WTRestService service = new WTRestService(WTHelper.apiV1(endpoint), clientId, secret.get());
 
     try {
-      session.doConnectTest();
+      service.doConnectTest();
       return FormValidation.ok("Connect worktile API successfully");
     } catch (Exception e) {
-      logger.warning("test connect error " + e.getMessage());
       return FormValidation.error("Connect Worktile OpenApi Error; err : " + e.getMessage());
     }
   }
 
-  public ListBoxModel doFillCredentialsIdItems(
-      @QueryParameter final String endpoint,
-      @QueryParameter final String clientId,
-      @QueryParameter final String credentialsId) {
+  public ListBoxModel doFillCredentialsIdItems(@QueryParameter final String endpoint,
+      @QueryParameter final String clientId, @QueryParameter final String credentialsId) {
 
-    return new StandardListBoxModel()
-        .includeEmptyValue()
-        .includeMatchingAs(
-            ACL.SYSTEM,
-            Jenkins.get(),
-            StringCredentials.class,
-            URIRequirementBuilder.fromUri(StringUtils.defaultIfBlank(endpoint, DEFAULT_ENDPOINT))
-                .build(),
-            CredentialsMatchers.always());
+    return new StandardListBoxModel().includeEmptyValue().includeMatchingAs(ACL.SYSTEM, Jenkins.get(),
+        StringCredentials.class,
+        URIRequirementBuilder.fromUri(StringUtils.defaultIfBlank(endpoint, DEFAULT_ENDPOINT)).build(),
+        CredentialsMatchers.always());
   }
 }

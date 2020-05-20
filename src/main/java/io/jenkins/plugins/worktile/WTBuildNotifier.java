@@ -32,12 +32,8 @@ public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
   }
 
   @Override
-  public void perform(
-      @Nonnull Run<?, ?> run,
-      @Nonnull FilePath workspace,
-      @Nonnull Launcher launcher,
-      @Nonnull TaskListener listener)
-      throws IOException, InternalError {
+  public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
+      @Nonnull TaskListener listener) throws IOException, InternalError {
     this.createBuild(run, listener);
   }
 
@@ -75,6 +71,7 @@ public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
       super(WTBuildNotifier.class);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public boolean isApplicable(Class<? extends AbstractProject> jobType) {
       return true;
@@ -83,12 +80,11 @@ public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
     @NotNull
     @Override
     public String getDisplayName() {
-      return "Worktile build notifier";
+      return Messages.WTBuildNotifier_DisplayName();
     }
 
     @Override
-    public WTBuildNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData)
-        throws FormException {
+    public WTBuildNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData) throws FormException {
       assert request != null;
       return request.bindJSON(WTBuildNotifier.class, formData);
     }

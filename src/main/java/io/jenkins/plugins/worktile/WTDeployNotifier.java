@@ -35,24 +35,19 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
   private String releaseUrl;
 
   @DataBoundConstructor
-  public WTDeployNotifier(
-      final String environment, final String releaseName, final String releaseUrl) {
+  public WTDeployNotifier(final String environment, final String releaseName, final String releaseUrl) {
     setReleaseName(releaseName);
     setReleaseUrl(releaseUrl);
     setEnvironment(environment);
   }
 
   @Override
-  public void perform(
-      @NotNull Run<?, ?> run,
-      @NotNull FilePath workspace,
-      @NotNull Launcher launcher,
+  public void perform(@NotNull Run<?, ?> run, @NotNull FilePath workspace, @NotNull Launcher launcher,
       @NotNull TaskListener listener) {
 
     WTLogger wtLogger = new WTLogger(listener);
 
-    WTDeployEntity entity =
-        WTDeployEntity.from(run, getReleaseName(), getReleaseUrl(), getEnvironment());
+    WTDeployEntity entity = WTDeployEntity.from(run, getReleaseName(), getReleaseUrl(), getEnvironment());
 
     WTRestService session = new WTRestService();
     wtLogger.info("Will send data to worktile: " + entity.toString());
@@ -97,6 +92,7 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
       load();
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public boolean isApplicable(@NotNull final Class<? extends AbstractProject> item) {
       return true;
@@ -104,12 +100,11 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
 
     @Override
     public String getDisplayName() {
-      return "Worktile deploy notifier";
+      return Messages.WTDeployNotifier_DisplayName();
     }
 
     @Override
-    public WTDeployNotifier newInstance(
-        final StaplerRequest request, @NotNull final JSONObject formData) {
+    public WTDeployNotifier newInstance(final StaplerRequest request, @NotNull final JSONObject formData) {
       assert request != null;
       return request.bindJSON(WTDeployNotifier.class, formData);
     }
