@@ -29,7 +29,7 @@ public class WTHelperTest {
   public void testBuildName() {
     String fullName = "fyt-jenkins-demo #10";
     int index = fullName.lastIndexOf("#");
-    String name  = fullName.substring(0, index).trim();
+    String name = fullName.substring(0, index).trim();
     assertEquals(name, "fyt-jenkins-demo");
   }
 }

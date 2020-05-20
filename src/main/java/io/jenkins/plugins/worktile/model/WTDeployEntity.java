@@ -36,7 +36,7 @@ public class WTDeployEntity {
     entity.status = status;
     entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());
     entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
-    entity.duration = run.getDuration();
+    entity.duration = Math.subtractExact(entity.endAt, entity.startAt);
     entity.workItemIdentifiers = WorkItemResolver.create(run, vars).resolve().toArray(new String[0]);
     return entity;
   }
