@@ -1,13 +1,11 @@
 package io.jenkins.plugins.worktile.model;
 
 import com.google.gson.Gson;
+
 import hudson.EnvVars;
-import hudson.model.AbstractBuild;
 import hudson.model.Run;
-import hudson.model.TaskListener;
 import io.jenkins.plugins.worktile.WTHelper;
 import io.jenkins.plugins.worktile.resolver.WorkItemResolver;
-import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class WTDeployEntity {
   public String releaseName;
@@ -35,7 +33,7 @@ public class WTDeployEntity {
     entity.releaseName = vars.expand(releaseName);
     entity.releaseUrl = vars.expand(releaseUrl);
     entity.envId = envId;
-    entity.status = status.toLowerCase().equals("success") ? Status.Deployed.getValue() : Status.NotDeployed.getValue();
+    entity.status = status;
     entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());
     entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
     entity.duration = run.getDuration();

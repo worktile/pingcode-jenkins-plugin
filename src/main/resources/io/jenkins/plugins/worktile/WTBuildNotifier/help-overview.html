@@ -1,3 +1,27 @@
 <div>
-    从测试结果中匹配结果概述。
+    从构建结构中匹配出结果概述的正则表达式。
+    <br>
+    <br>
+    假如以下是 jenkins console 中输出的部分内容:
+    <br>
+    <br>
+    <code>
+        # utilities <br>
+        ✓ 1. format ok <br>
+        ✓ 2. format ok, trim=true <br>
+        ✓ 3. format ok, index=[0, 1, 2] <br>
+        ✓ 3. format ok, index=[0,2] <br>
+        ✓ #PLM-1239 isSha, input '0-9a-fA-F' * 40, true <br>
+        ✓ PLM-1239 isSha, input '0-9a-fA-F' * 39, false <br>
+        ✓ PLM-1239 isSha, input '0-9a-fA-F' * 41, false <br>
+        ✓ PLM-1239 isSha, input ' ' + '0-9a-fA-F' * 39, false <br>
+        ✓ PLM-1239 isSha, input '0-9a-fA-F' * 39 + ' ', false <br>
+        ✓ PLM-1239 isSha, input '0-9a-fA-F' * 1 + '0-9a-fA-F ' * + '0-9a-fA-F' * 1, true <br>
+    720 passing (10s) <br>
+    <br>
+    </code>
+    <div>
+        假如你想将 720 passing (10s) 这行内容显示在worktile开发面板上， 则需要在输入框中输入 .*passing。
+        worktile jenkins plugin 会按照你的输入正则表达式将这行内容从构建结果中匹配出来，并发送给 worktile。
+    </div>
 </div>

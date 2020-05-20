@@ -1,13 +1,14 @@
 package io.jenkins.plugins.worktile.model;
 
 import com.google.gson.Gson;
+
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
-import hudson.model.TaskListener;
 import io.jenkins.plugins.worktile.WTHelper;
 import io.jenkins.plugins.worktile.resolver.WorkItemResolver;
-import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class WTBuildEntity {
   public final String provider = "jenkins";

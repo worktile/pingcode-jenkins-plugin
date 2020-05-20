@@ -86,7 +86,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     try {
       req.bindJSON(this, formatData);
     } catch (Exception e) {
-      throw new FormException(e.getMessage(), e, "globalConfig");
+      throw new FormException(e.getMessage(), e, Messages.WTGlobalConfig_GlobalConfigError());
     }
     save();
     return true;
@@ -94,19 +94,20 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
 
   public FormValidation doCheckEndpoint(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint) {
     if (WTHelper.isNotBlank(endpoint) && !WTHelper.isURL(endpoint)) {
-      return FormValidation.error("endpoint format error");
+      return FormValidation.error(Messages.WTGlobalConfig_OpenApiEndpointError());
     }
     return FormValidation.ok();
   }
 
   public FormValidation doCheckClientId(@QueryParameter(value = "clientId", fixEmpty = true) String clientId) {
-    return WTHelper.isNotBlank(clientId) ? FormValidation.ok() : FormValidation.error("client id can not be empty");
+    return WTHelper.isNotBlank(clientId) ? FormValidation.ok()
+        : FormValidation.error(Messages.WTGlobalConfig_ClientIdError());
   }
 
   public FormValidation doCheckCredentialsId(
       @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) {
     return WTHelper.isNotBlank(credentialsId) ? FormValidation.ok()
-        : FormValidation.error("credentialsId can not be empty");
+        : FormValidation.error(Messages.WTGlobalConfig_CredentialsIdEmpty());
   }
 
   public FormValidation doTestConnection(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint,
@@ -114,19 +115,20 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
       @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) throws IOException {
 
     if (StringUtils.isEmpty(credentialsId) || StringUtils.isEmpty(endpoint) || StringUtils.isEmpty(clientId)) {
-      return FormValidation.error("error");
+      return FormValidation.error(Messages.WTGlobalConfig_AnyOfIdError());
     }
+
     Optional<String> secret = SecretResolver.getSecretOf(credentialsId);
     if (!secret.isPresent()) {
-      return FormValidation.error("secret not found or wrong");
+      return FormValidation.error(Messages.WTGlobalConfig_CredentialsIdNotSelectOrError());
     }
     WTRestService service = new WTRestService(WTHelper.apiV1(endpoint), clientId, secret.get());
 
     try {
       service.doConnectTest();
-      return FormValidation.ok("Connect worktile API successfully");
+      return FormValidation.ok(Messages.WTGlobalConfig_DoTestConnectionSuccessfully());
     } catch (Exception e) {
-      return FormValidation.error("Connect Worktile OpenApi Error; err : " + e.getMessage());
+      return FormValidation.error(e.getMessage());
     }
   }
 
