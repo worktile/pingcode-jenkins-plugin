@@ -31,7 +31,9 @@ public class WTBuildEntity {
     } catch (Exception e) {
       vars = new EnvVars();
     }
-    entity.name = run.getFullDisplayName();
+    String fullName = run.getFullDisplayName();
+    int index  = fullName.lastIndexOf("#");
+    entity.name = fullName.substring(0, index).trim();
     entity.identifier = run.getId();
     entity.resultOverview = WTHelper.resolveOverview(run, pattern);
     entity.status =
