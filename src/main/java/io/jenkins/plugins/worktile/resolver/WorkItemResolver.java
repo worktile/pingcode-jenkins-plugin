@@ -1,20 +1,19 @@
 package io.jenkins.plugins.worktile.resolver;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
 import io.jenkins.plugins.worktile.WTHelper;
 import jenkins.scm.RunWithSCM;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
-import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class WorkItemResolver {
   public static final Pattern branchPattern = Pattern.compile("#[^/]*[A-Za-z0-9_]+-[0-9]+");
