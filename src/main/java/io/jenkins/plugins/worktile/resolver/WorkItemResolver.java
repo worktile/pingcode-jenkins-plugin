@@ -12,6 +12,7 @@ import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
+import hudson.scm.ChangeLogSet.Entry;
 import io.jenkins.plugins.worktile.WTHelper;
 import jenkins.scm.RunWithSCM;
 
@@ -56,10 +57,10 @@ public class WorkItemResolver {
   public List<String> resolveFromSCM() {
     if (getScm() == null)
       return new ArrayList<>();
-    List changeSets = getScm().getChangeSets();
+    List<ChangeLogSet<? extends Entry>> changeSets = getScm().getChangeSets();
     List<String> array = new ArrayList<>();
     changeSets.forEach(changeSet -> {
-      array.addAll(resolveFromChangeSet((ChangeLogSet<ChangeLogSet.Entry>) changeSet));
+      array.addAll(resolveFromChangeSet((ChangeLogSet<? extends ChangeLogSet.Entry>) changeSet));
     });
     return array;
   }
@@ -92,7 +93,7 @@ public class WorkItemResolver {
     return new ArrayList<>(new HashSet<>(array));
   }
 
-  public List<String> resolveFromChangeSet(ChangeLogSet<ChangeLogSet.Entry> logSet) {
+  public List<String> resolveFromChangeSet(ChangeLogSet<? extends ChangeLogSet.Entry> logSet) {
     List<String> array = new ArrayList<>();
     for (Object change : logSet) {
       ChangeLogSet.Entry entry = (ChangeLogSet.Entry) change;
