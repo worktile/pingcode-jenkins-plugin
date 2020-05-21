@@ -136,7 +136,7 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
            worktileDeployRecord(
               releaseName: "release-${BUILD_ID}",
               environmentName: "Product",
-              releaseURL: "[https://www.worktile.com/release-${JENKINS_HOME}"],
+              releaseURL: "https://www.worktile.com/release-${JENKINS_HOME}",
               failOnError: false
           )
        }
