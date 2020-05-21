@@ -40,7 +40,7 @@ Commit message and pull request title|Supports bind to multiple `#IDENTIFIER` sp
 
 1. On the left navigation bar > `Manage Jenkins` > `Configure System` > `Worktile application`.
 2. Enter the following information:
-    - `Endpoint` - The URL of Worktile REST API, we provide a default value.
+    - `Endpoint` - The URL of Worktile REST API. The default value is `https://open.worktile.com`.
     - `Client id` - Copy from Worktile `Custom application` page (Client ID column).
     - `Client secret` - Click Add > Jenkins
       - For Kind, select `Secret text`.
