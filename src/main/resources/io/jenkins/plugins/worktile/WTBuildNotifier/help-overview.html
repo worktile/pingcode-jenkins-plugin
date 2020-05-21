@@ -2,7 +2,7 @@
     从构建结构中匹配出结果概述的正则表达式。
     <br>
     <br>
-    假如以下是 jenkins console 中输出的部分内容:
+    例如: 以下是 jenkins console 中输出的部分内容:
     <br>
     <br>
     <code>
@@ -21,7 +21,7 @@
     <br>
     </code>
     <div>
-        假如你想将 720 passing (10s) 这行内容显示在worktile开发面板上， 则需要在输入框中输入 .*passing。
-        worktile jenkins plugin 会按照你的输入正则表达式将这行内容从构建结果中匹配出来，并发送给 worktile。
+        假如你想将 720 passing (10s) 这行内容显示在worktile开发面板上， 则需要在输入框中输入 ^.*passing 。
+        Worktile jenkins plugin 会按照你的输入正则表达式将这行内容从构建结果中匹配出来，并发送到 Worktile。
     </div>
 </div>

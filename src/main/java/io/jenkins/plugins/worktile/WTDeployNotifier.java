@@ -139,7 +139,7 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
     public FormValidation doCheckReleaseName(
         @QueryParameter(value = "releaseName", fixEmpty = true) String releaseName) {
       if (WTHelper.isBlank(releaseName)) {
-        return FormValidation.error("release name can not be empty");
+        return FormValidation.error(Messages.WTDeployNotifier_RelaseNameEmpty());
       }
       return FormValidation.ok();
     }
@@ -147,16 +147,7 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
     public FormValidation doCheckEnvironmentName(
         @QueryParameter(value = "environmentName", fixEmpty = true) String environmentName) {
       if (WTHelper.isBlank(environmentName)) {
-        return FormValidation.error("environment name can not be empty");
-      }
-      return FormValidation.ok();
-    }
-
-    public FormValidation doCheckReleaseUrl(@QueryParameter(value = "releaseUrl", fixEmpty = true) String releaseUrl) {
-      if (releaseUrl != null) {
-        if (!WTHelper.isURL(releaseUrl)) {
-          return FormValidation.error("release url not a url");
-        }
+        return FormValidation.error(Messages.WTDeployNotifier_EnvironmentEmpty());
       }
       return FormValidation.ok();
     }
