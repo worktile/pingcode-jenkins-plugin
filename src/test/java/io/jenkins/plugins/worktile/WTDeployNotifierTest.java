@@ -43,16 +43,12 @@ public class WTDeployNotifierTest {
       when(abstractBuild.getResult()).thenReturn(Result.FAILURE);
       when(abstractBuild.getEnvironment(TaskListener.NULL)).thenReturn(vars);
 
-      WTDeployEntity entity =
-          WTDeployEntity.from(
-              abstractBuild,
-              "build-${BUILD_ID}",
-              "http://www.worktile.com/release-1",
-              "1234567");
+      WTDeployEntity entity = WTDeployEntity.from(abstractBuild, "build-${BUILD_ID}",
+          "http://www.worktile.com/release-1", "1234567");
 
       assertEquals(entity.releaseName, "build-110");
       assertEquals(entity.releaseUrl, "http://www.worktile.com/release-1");
-      assertEquals(entity.status, WTDeployEntity.Status.NotDeployed.getDeploy());
+      assertEquals(entity.status, WTDeployEntity.Status.NotDeployed.getValue());
 
       vars.clear();
     }

@@ -35,6 +35,9 @@ public class WTSendDeployStep extends Step implements Serializable {
   @DataBoundSetter
   private boolean failOnError;
 
+  @DataBoundSetter
+  private String status;
+
   @DataBoundConstructor
   public WTSendDeployStep(String releaseName, String environmentName) {
     this.releaseName = releaseName;
@@ -78,12 +81,13 @@ public class WTSendDeployStep extends Step implements Serializable {
         }
       }
 
-      WTDeployEntity entity = WTDeployEntity.from(run, this.step.releaseName, this.step.releaseURL, envId);
+      WTDeployEntity entity = WTDeployEntity.from(run, this.step.status, this.step.releaseName, this.step.releaseURL,
+          envId);
 
       wtLogger.info("Will send data to worktile: " + entity.toString());
       try {
         service.createDeploy(entity);
-        wtLogger.info("Send to to worktile successfully");
+        wtLogger.info("Create worktile deploy record successfully.");
       } catch (Exception exception) {
         wtLogger.error(exception.getMessage());
         if (this.step.failOnError) {

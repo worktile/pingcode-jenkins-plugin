@@ -1,22 +1,22 @@
 package io.jenkins.plugins.worktile;
 
-import hudson.EnvVars;
-import hudson.model.Result;
-import hudson.model.Run;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringSubstitutor;
-
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+
+import hudson.EnvVars;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 
 public class WTHelper {
 
@@ -51,11 +51,15 @@ public class WTHelper {
 
   public static String statusOfRun(final Run<?, ?> run) {
     Result result = run.getResult();
-    return result == null ? "failure" : result.toString().toLowerCase();
+    return result == null ? "success" : result.toString().toLowerCase();
   }
 
-  public static boolean isExpired(long future) {
-    return toSafeTs(System.currentTimeMillis()) > future;
+  public static EnvVars safeEnvVars(Run<?, ?> run) {
+    try {
+      return run.getEnvironment(TaskListener.NULL);
+    } catch (Exception e) {
+      return new EnvVars();
+    }
   }
 
   public static long toSafeTs(long time) {
@@ -75,8 +79,8 @@ public class WTHelper {
     }
   }
 
-  public static List<String> getMatchSet(
-      Pattern pattern, List<String> messages, boolean breakFirstMatch, boolean origin) {
+  public static List<String> getMatchSet(Pattern pattern, List<String> messages, boolean breakFirstMatch,
+      boolean origin) {
     HashSet<String> set = new HashSet<>();
     for (String msg : messages) {
       Matcher matcher = pattern.matcher(msg);
