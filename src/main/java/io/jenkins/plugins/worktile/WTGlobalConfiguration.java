@@ -128,7 +128,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
       service.doConnectTest();
       return FormValidation.ok(Messages.WTGlobalConfig_DoTestConnectionSuccessfully());
     } catch (Exception e) {
-      return FormValidation.error(e.getMessage());
+      return FormValidation.error(Messages.WTGlobalConfig_DoTestConnectionFailure() + e.getMessage());
     }
   }
 
