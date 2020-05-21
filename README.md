@@ -72,7 +72,7 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
 
   Finally, save these configurations. When the build is triggered, it will post the build information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name、commit message or pull request title, you will get views in Worktile agile project about what happening on build.
 
-##### Sendi deployment information
+##### Send deployment information
 
    1. Select `Worktile deploy notifier`.
    2. Enter the following information:
