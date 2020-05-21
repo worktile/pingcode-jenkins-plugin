@@ -1,5 +1,13 @@
 package io.jenkins.plugins.worktile;
 
+import java.io.IOException;
+
+import org.jetbrains.annotations.NotNull;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -11,27 +19,15 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
 import io.jenkins.plugins.worktile.model.WTDeployEntity;
 import io.jenkins.plugins.worktile.model.WTEnvironmentEntity;
 import io.jenkins.plugins.worktile.model.WTEnvironmentSchema;
-import io.jenkins.plugins.worktile.model.WTPaginationResponse;
 import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.service.WTRestService;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
-import org.jetbrains.annotations.NotNull;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
-import java.util.logging.Logger;
 
 public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
-  private static final Logger logger = Logger.getLogger(WTDeployNotifier.class.getName());
-
   private String environmentName;
 
   private String releaseName;
