@@ -33,14 +33,14 @@ Commit message and pull request title|Supports bind to multiple `#IDENTIFIER` sp
    - Authentication method - `Client Credentials`.
    - Permission - The range of data that can be accessed. Give `DevOps: 构建` and `DevOps: 发布` read and write permission.
 
-     ![Y7CMZT.png](https://s1.ax1x.com/2020/05/20/YofgXV.png)
+    ![Yqnd91.jpg](https://s1.ax1x.com/2020/05/21/Yqnd91.jpg)
 5. Copy Client ID and Client Secret.
 
 ### Configure Plugin
 
 1. On the left navigation bar > `Manage Jenkins` > `Configure System` > `Worktile application`.
 2. Enter the following information:
-    - `Endpoint` - The URL prefix to access Worktile REST API, we provide a default value.
+    - `Endpoint` - The URL of Worktile REST API. The default value is `https://open.worktile.com`.
     - `Client id` - Copy from Worktile `Custom application` page (Client ID column).
     - `Client secret` - Click Add > Jenkins
       - For Kind, select `Secret text`.
@@ -48,7 +48,7 @@ Commit message and pull request title|Supports bind to multiple `#IDENTIFIER` sp
 
       Once you add it successfully, you will find this Secret in the `Client secret` list and select it as a `Client secret`.
 
-3. Click TestConnection to make sure your credentials are valid.
+3. Click `Test Connection` to make sure your credentials are valid.
 
 ## Usage
 
@@ -57,39 +57,39 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
 ### Freestyle project
 
   1. Go into a specific Freestyle project in Jenkins.
-  2. Find "Post-build Actions" and click it.
+  2. Find "Add post-build action" and click it.
 
-      ![Y7CMZT.png](https://s1.ax1x.com/2020/05/20/YTKgF1.png)
+  ![YqE7MF.png](https://s1.ax1x.com/2020/05/21/YqE7MF.png)
 
 ##### Send build information
 
-   1. Select `Worktile build notifier`.
+   1. Select `Worktile: create build record`.
    2. Enter the following information:
   
-       - `overreview pattern` - Optional. A regular expression is used to match the result summary in the build result for display on Worktile.
+       - `Overview pattern` - Optional. A regular expression is used to match the result summary in the build output for display in Worktile.
 
-       ![Y7CMZT.png](https://s1.ax1x.com/2020/05/20/YTM27j.png)
+       ![YqA1XQ.png](https://s1.ax1x.com/2020/05/21/YqA1XQ.png)
 
-  Finally, save these configurations. When the build is triggered, it will post the build information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name、commit message or pull request title, you will get views in Worktile agile project about what happening on build.
+  Finally, save these configurations. When the build is triggered, it will post the build information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name, commit message or pull request title, you will get views in Worktile agile project about what happening on build.
 
 ##### Send deployment information
 
-   1. Select `Worktile deploy notifier`.
+   1. Select `Worktile: create deploy record`.
    2. Enter the following information:
 
-       - `release name` - Required. The name of the release.
-       - `environments` - Required. Environment that the code will be deployed to. Firstly, you need to create an environment via Worktile REST API named [Create an environment](https://open.worktile.com/#api-%E7%8E%AF%E5%A2%83).
-       - `release url` - Optional. A URL that can view the detail deployment results.
+       - `Release name` - Required. The name of the release. You can use environment variables for dynamic variable substitution in the name. For example: `release-${BUILD_ID}`, which means that the release name is dynamically generated using the `BUILD_ID`. All environment variables injected by the plugin can be used. If the environment variable does not exist, the source character will be retained.
+       - `Environment name` - Required. The name of environment that the code will be deployed to. If the environment does not exist, the plugin will automatically create.
+       - `Release URL` - Optional. A URL that can view the detail deployment results. If it is empty, no related links are displayed in Worktile.
 
-        ![Y7CMZT.png](https://s1.ax1x.com/2020/05/20/Y7CMZT.png)
+       ![YbTMt0.png](https://s1.ax1x.com/2020/05/21/YbTMt0.png)
 
-  Finally, save these configurations. When the deployment is triggered, it will post the deployment information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name、commit message or pull request title, you will get views in Worktile agile project about what happening on deployment.
+  Finally, save these configurations. When the deployment is triggered, it will post the deployment information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name, commit message or pull request title, you will get views in Worktile agile project about what happening on deployment.
 
 #### Pipeline Project
 
 ##### Send build information
 
-  This is an example snippet of a very simple ‘build’ stage set up in a Jenkinsfile. When the pipeline is triggered, it will post the build information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name、commit message or pull request title, you will get views in Worktile agile project about what happening on build.
+  This is an example snippet of a very simple "build" stage set up in a Jenkinsfile. When the pipeline is triggered, it will post the build information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name, commit message or pull request title, you will get views in Worktile agile project about what happening on build.
 
   ``` syntaxhighlighter-pre
     node {
@@ -108,14 +108,14 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
   ```
 
 
-  About `worktileDeployRecord`, you can get the following information:
+  About `worktileBuildRecord`, you can get the following information:
 
-- `overviewPattern` - Optional. A regular expression is used to match the result summary in the build result for display on Worktile.
-- `failOnError` - Optional. If the value is true, when the current build is failed, subsequent builds will also be set to failure in Worktile during a trigger. The default value is false.
+- `overviewPattern` - Optional. A regular expression is used to match the result summary in the build result for display in Worktile.
+- `failOnError` - Optional. When the value is true, if the process of sending build data to Worktile fails, the entire build will be marked as failed in Jenkins, otherwise Jenkins' build results will not be affected by it. The default value is false.
 
 ##### Send deployment information
 
-  Below is an example of a very simple "deployment" stage set up in a Jenkinsfile. When the pipeline is triggered, it will post the deployment information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name、commit message or pull request title, you will get views in Worktile agile project about what happening on deployment.
+  Below is an example of a very simple "deployment" stage set up in a Jenkinsfile. When the pipeline is triggered, it will post the deployment information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name, commit message or pull request title, you will get views in Worktile agile project about what happening on deployment.
 
 ```syntaxhighlighter-pre
     node {
@@ -137,10 +137,10 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
 
   Ref `worktileDeployRecord`, you can get the following information:
 
-- `releaseName`- Required. The name of the release.
-- `environmentName` - Required. Environment name that the code will be deployed to. If you have no environments, you need to create an environment via Worktile REST API named [Create an environment](https://open.worktile.com/#api-%E7%8E%AF%E5%A2%83).
-- `releaseURL` - Optional. A URL that can view the detail deployment results.
-- `failOnError` - Optional. If the value is true, when the current deployment is failed, subsequent deployments will also be set to failure in Worktile during a trigger. The default value is false.
+- `releaseName`- Required. The name of the release. You can use environment variables for dynamic variable substitution in the name. For example: `release-${BUILD_ID}`, which means that the release name is dynamically generated using the `BUILD_ID`. All environment variables injected by the plugin can be used. If the environment variable does not exist, the source character will be retained.
+- `environmentName` - Required. The name of environment that the code will be deployed to. If the environment does not exist, the plugin will automatically create.
+- `releaseURL` - Optional. A URL that can view the detail deployment results. If it is empty, no related links are displayed in Worktile.
+- `failOnError` - Optional. When the value is true, if the process of sending deployment data to Worktile fails, the entire deployment will be marked as failed in Jenkins, otherwise Jenkins' deployment results will not be affected by it. The default value is false.
 
 ## View Builds/Deployments in Worktile
 
