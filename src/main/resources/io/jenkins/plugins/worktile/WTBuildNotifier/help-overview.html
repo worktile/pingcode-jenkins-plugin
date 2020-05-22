@@ -1,27 +1,31 @@
 <div>
-    从构建结构中匹配出结果概述的正则表达式。
+    A regular expression is used to match the result summary in the build output for display in Worktile.
     <br>
     <br>
-    例如: 以下是 jenkins console 中输出的部分内容:
+
+    For example: The following is part of the build output in Jenkins:
     <br>
     <br>
     <code>
-        # utilities <br>
-        ✓ 1. format ok <br>
-        ✓ 2. format ok, trim=true <br>
-        ✓ 3. format ok, index=[0, 1, 2] <br>
-        ✓ 3. format ok, index=[0,2] <br>
+        ...<br>
+        # utilities
         ✓ #PLM-1239 isSha, input '0-9a-fA-F' * 40, true <br>
-        ✓ PLM-1239 isSha, input '0-9a-fA-F' * 39, false <br>
-        ✓ PLM-1239 isSha, input '0-9a-fA-F' * 41, false <br>
-        ✓ PLM-1239 isSha, input ' ' + '0-9a-fA-F' * 39, false <br>
-        ✓ PLM-1239 isSha, input '0-9a-fA-F' * 39 + ' ', false <br>
-        ✓ PLM-1239 isSha, input '0-9a-fA-F' * 1 + '0-9a-fA-F ' * + '0-9a-fA-F' * 1, true <br>
-    720 passing (10s) <br>
-    <br>
+        ✓ #PLM-1239 isSha, input '0-9a-fA-F' * 39, false <br>
+        ✓ #PLM-1239 isSha, input '0-9a-fA-F' * 41, false <br>
+        ✓ #PLM-1239 isSha, input ' ' + '0-9a-fA-F' * 39, false <br>
+        ✓ #PLM-1239 isSha, input '0-9a-fA-F' * 39 + ' ', false <br>
+        ✓ #PLM-1239 isSha, input '0-9a-fA-F' * 1 + '0-9a-fA-F ' * + '0-9a-fA-F' * 1, true <br>
+        <br>
+        720 passing (10s)
     </code>
-    <div>
-        假如你想将 720 passing (10s) 这行内容显示在worktile开发面板上， 则需要在输入框中输入 ^.*passing 。
-        Worktile jenkins plugin 会按照你的输入正则表达式将这行内容从构建结果中匹配出来，并发送到 Worktile。
-    </div>
+
+    <p>
+        If you want to display the line <strong style="color: red;">720 passing (10s)</strong> on Worktile Agile
+        Project, you need to enter
+        <strong style="color: blueviolet;">^.*passing</strong> in
+        the
+        input box. Worktile jenkins plugin will match this line from the build result according to your input regular
+        expression
+        and send it to Worktile.
+    </p>
 </div>

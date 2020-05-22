@@ -9,11 +9,11 @@ f.section(title: _('Worktile application')) {
         f.textbox(default: instance.defaultEndpoint)
     }
 
-    f.entry(title:_('Client id'), field:'clientId') {
+    f.entry(title:_('Client ID'), field:'clientId') {
         f.textbox()
     }
 
-    f.entry(title:_('Client secret'), field:'credentialsId') {
+    f.entry(title:_('Client Secret'), field:'credentialsId') {
         c.select(onchange = """{
             var self = this.targetElement ? this.targetElement : this;
             var r = findPreviousFormItem(self,'url');
@@ -24,7 +24,7 @@ f.section(title: _('Worktile application')) {
     }
 
     f.entry(title: _('')) {
-        f.validateButton(title: 'TestConnection', method: 'testConnection', with: 'endpoint,clientId,credentialsId')
+        f.validateButton(title: 'Test Connection', method: 'testConnection', with: 'endpoint,clientId,credentialsId')
     }
 
     // f.advanced(align: 'left') {
