@@ -2,16 +2,13 @@ package io.jenkins.plugins.worktile;
 
 import java.io.IOException;
 
+import hudson.*;
 import org.jetbrains.annotations.NotNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -135,7 +132,7 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
     public FormValidation doCheckReleaseName(
         @QueryParameter(value = "releaseName", fixEmpty = true) String releaseName) {
       if (WTHelper.isBlank(releaseName)) {
-        return FormValidation.error(Messages.WTDeployNotifier_RelaseNameEmpty());
+        return FormValidation.error(Messages.WTDeployNotifier_ReleaseNameEmpty());
       }
       return FormValidation.ok();
     }
