@@ -1,8 +1,8 @@
 <div>
-    发布的名称。名称中可以使用环境变量进行动态变量替换，例如： release-${BUILD_ID}, 表示利用构建id动态生成发布名称。
+    The name of the release. You can use environment variables for dynamic variable substitution in the name.
     <br>
-    <br>
-    <strong>
-        可以使用任意插件注入的环境变量。如果该环境变量不存在，源字符将被保留。
-    </strong>
+    For example: release-${BUILD_ID}, which means that the release name is dynamically generated using the BUILD_ID. All
+    environment
+    variables injected by the plugin can be used. If the environment variable does not exist, the source character will
+    be retained.
 </div>

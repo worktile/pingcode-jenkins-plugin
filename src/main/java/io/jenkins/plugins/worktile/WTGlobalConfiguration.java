@@ -8,6 +8,7 @@ import hudson.Util;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.resolver.SecretResolver;
 import io.jenkins.plugins.worktile.service.WTRestService;
 import jenkins.model.GlobalConfiguration;
@@ -127,6 +128,9 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     try {
       service.doConnectTest();
       return FormValidation.ok(Messages.WTGlobalConfig_DoTestConnectionSuccessfully());
+    } catch (WTRestException e) {
+      return FormValidation.error(Messages.WTGlobalConfig_DoTestConnectionFailure() + ": "
+          + Messages.WTGlobalConfig_ClientIdOrClientSecretError());
     } catch (Exception e) {
       return FormValidation.error(Messages.WTGlobalConfig_DoTestConnectionFailure() + e.getMessage());
     }
