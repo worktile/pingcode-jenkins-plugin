@@ -1,13 +1,5 @@
 package io.jenkins.plugins.worktile.resolver;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.regex.Pattern;
-
-import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
@@ -15,91 +7,64 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import io.jenkins.plugins.worktile.WTHelper;
 import jenkins.scm.RunWithSCM;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class WorkItemResolver {
-  public static final Pattern branchPattern = Pattern.compile("#[^/]*[A-Za-z0-9_]+-[0-9]+");
-  public static final Pattern messagePattern = Pattern.compile("#[^\\s]*[A-Za-z0-9_]+-[0-9]+");
+    public static final Pattern pattern = Pattern.compile("#[^(\\s|/)]*[A-Za-z0-9_]+-[0-9]+");
 
-  private final RunWithSCM scm;
-  private final EnvVars envVars;
+    private final Set<String> collection = new HashSet<>();
+    private final RunWithSCM scm;
+    private final EnvVars envVars;
 
-  @SuppressWarnings("rawtypes")
-  public static WorkItemResolver create(Run<?, ?> run, EnvVars vars) {
-    RunWithSCM runWithScm = null;
-    if (run instanceof AbstractBuild<?, ?>) {
-      runWithScm = (AbstractBuild<?, ?>) run;
-    } else if (run instanceof WorkflowRun) {
-      runWithScm = (WorkflowRun) run;
+    public WorkItemResolver(RunWithSCM scm, EnvVars vars) {
+        this.scm = scm;
+        this.envVars = vars;
     }
-    return new WorkItemResolver(runWithScm, vars);
-  }
 
-  public WorkItemResolver(RunWithSCM scm, EnvVars vars) {
-    this.scm = scm;
-    this.envVars = vars;
-  }
-
-  public List<String> resolve() {
-    List<String> array = new ArrayList<>();
-    if (getScm() != null) {
-      array.addAll(resolveFromSCM());
+    @SuppressWarnings("rawtypes")
+    public static WorkItemResolver create(Run<?, ?> run, EnvVars vars) {
+        RunWithSCM runWithScm = null;
+        if(run instanceof AbstractBuild<?, ?>) {
+            runWithScm = (AbstractBuild<?, ?>)run;
+        }
+        else if(run instanceof WorkflowRun) {
+            runWithScm = (WorkflowRun)run;
+        }
+        return new WorkItemResolver(runWithScm, vars);
     }
-    if (getEnvVars() != null) {
-      array.addAll(resolveFromEnv());
-    }
-    return array;
-  }
 
-  public RunWithSCM getScm() {
-    return scm;
-  }
-
-  public List<String> resolveFromSCM() {
-    if (getScm() == null)
-      return new ArrayList<>();
-    List<ChangeLogSet<? extends Entry>> changeSets = getScm().getChangeSets();
-    List<String> array = new ArrayList<>();
-    changeSets.forEach(changeSet -> {
-      array.addAll(resolveFromChangeSet((ChangeLogSet<? extends ChangeLogSet.Entry>) changeSet));
-    });
-    return array;
-  }
-
-  public EnvVars getEnvVars() {
-    return envVars;
-  }
-
-  public List<String> resolveFromEnv() {
-    if (getEnvVars() == null) {
-      return new ArrayList<>();
+    public List<String> resolve() {
+        collection.clear();
+        fromSCM();
+        fromEnvironment();
+        List<String> matches = WTHelper.matches(pattern, new ArrayList<>(collection), false, false);
+        return WTHelper.formatWorkItems(matches);
     }
-    String branch = getEnvVars().get("GIT_BRANCH");
-    String ghprbSourceBranch = getEnvVars().get("ghprbSourceBranch");
-    String ghprbPullTitle = getEnvVars().get("ghprbPullTitle");
 
-    List<String> array = new ArrayList<>();
-    if (branch != null) {
-      array.addAll(WTHelper
-          .formatWorkItems(WTHelper.getMatchSet(branchPattern, Collections.singletonList(branch), false, false)));
+    public void fromSCM() {
+        if(scm == null) { return; }
+        List changeLogSets = scm.getChangeSets();
+        for(Object changeLogSet : changeLogSets) {
+            for(Object set : (ChangeLogSet<? extends Entry>)changeLogSet) {
+                String msg = ((Entry)set).getMsg();
+                if(msg != null) {
+                    collection.add(msg);
+                }
+            }
+        }
     }
-    if (ghprbSourceBranch != null) {
-      array.addAll(WTHelper.formatWorkItems(
-          WTHelper.getMatchSet(branchPattern, Collections.singletonList(ghprbSourceBranch), false, false)));
-    }
-    if (ghprbPullTitle != null) {
-      array.addAll(WTHelper.formatWorkItems(
-          WTHelper.getMatchSet(messagePattern, Collections.singletonList(ghprbPullTitle), false, false)));
-    }
-    return new ArrayList<>(new HashSet<>(array));
-  }
 
-  public List<String> resolveFromChangeSet(ChangeLogSet<? extends ChangeLogSet.Entry> logSet) {
-    List<String> array = new ArrayList<>();
-    for (Object change : logSet) {
-      ChangeLogSet.Entry entry = (ChangeLogSet.Entry) change;
-      String scmMessage = entry.getMsg();
-      array.add(scmMessage);
+    public void fromEnvironment() {
+        if(envVars == null) { return; }
+        if(envVars.get("GIT_BRANCH") != null) { collection.add(envVars.get("GIT_BRANCH")); }
+        if(envVars.get("ghprbSourceBranch") != null) { collection.add(envVars.get("ghprbSourceBranch")); }
+        if(envVars.get("ghprbPullTitle") != null) { collection.add(envVars.get("ghprbPullTitle")); }
+        if(envVars.get("ghprbCommentBody") != null) { collection.add(envVars.get("ghprbCommentBody")); }
     }
-    return WTHelper.formatWorkItems(WTHelper.getMatchSet(messagePattern, array, false, false));
-  }
 }

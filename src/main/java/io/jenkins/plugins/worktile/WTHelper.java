@@ -58,9 +58,7 @@ public class WTHelper {
 
     public static String statusOfRun(final Run<?, ?> run) {
         Result result = run.getResult();
-        return result == null
-            ? "success"
-            : result.toString().toLowerCase();
+        return result == null ? "success" : result.toString().toLowerCase();
     }
 
     public static EnvVars safeEnvVars(Run<?, ?> run) {
@@ -82,33 +80,24 @@ public class WTHelper {
         }
         try {
             Pattern pattern = Pattern.compile(overviewPattern);
-            List<String> matched = WTHelper.getMatchSet(pattern, run.getLog(999), true, true);
-            return matched.size() > 0
-                ? matched.get(0)
-                : null;
+            List<String> matched = WTHelper.matches(pattern, run.getLog(999), true, true);
+            return matched.size() > 0 ? matched.get(0) : null;
         }
         catch(Exception exception) {
             return null;
         }
     }
 
-    public static List<String> getMatchSet(
-        Pattern pattern, List<String> messages, boolean breakFirstMatch, boolean origin
+    public static List<String> matches(
+        Pattern pattern, List<String> contexts, boolean breakOnMatch, boolean origin
     ) {
         HashSet<String> set = new HashSet<>();
-        for(String msg : messages) {
-            Matcher matcher = pattern.matcher(msg);
-            if(matcher.find()) {
-                if(origin) {
-                    set.add(msg);
-                }
-                else {
-                    set.add(matcher.group());
-                }
-                if(breakFirstMatch) {
-                    break;
-                }
+        for(String context : contexts) {
+            Matcher matcher = pattern.matcher(context);
+            while(matcher.find()) {
+                set.add(origin ? context : matcher.group().toUpperCase());
             }
+            if(breakOnMatch) { break; }
         }
         return new ArrayList<>(set);
     }
