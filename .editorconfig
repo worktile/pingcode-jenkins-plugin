@@ -8,5 +8,8 @@ end_of_line = lf
 insert_final_newline =true
 
 
-[*.{xml,jelly,java}]
+[*.{xml,jelly}]
 indent_size = 2
+
+[*.java]
+indent_size = 4
