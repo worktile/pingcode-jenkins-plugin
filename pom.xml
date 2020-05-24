@@ -62,6 +62,19 @@
   </dependencyManagement>
   <dependencies>
 
+    <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/git -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>git</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>git-client</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+
     <!-- maven dependency -->
     <dependency>
       <groupId>org.apache.commons</groupId>

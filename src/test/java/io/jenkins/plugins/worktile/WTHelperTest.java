@@ -38,10 +38,11 @@ public class WTHelperTest {
     @Test
     public void testMatches() {
         Pattern pattern = WorkItemResolver.pattern;
-        List<String> contexts = Arrays.asList("yourName/#PLM-000",
-                                              "feat(refactor): #PLM-001 some context do refactor",
-                                              "feat(refactor): #PLM-000 do refactor",
-                                              "feat(refactor): #PLM-123 #PLM234"
+        List<String> contexts = Arrays.asList(//
+                "yourName/#PLM-000", // ..
+                "feat(refactor): #PLM-001 some context do refactor", //
+                "feat(refactor): #PLM-000 do refactor", // ..
+                "feat(refactor): #PLM-123 #PLM234" // ..
         );
 
         {
