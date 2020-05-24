@@ -48,15 +48,19 @@ public class WorkItemResolver {
     private final FilePath workspace;
     private final TaskListener listener;
 
-    public WorkItemResolver(final Run<?, ?> run, final FilePath workspace, final TaskListener listener) {
+    private final boolean isTagged;
+
+    public WorkItemResolver(final Run<?, ?> run, final FilePath workspace, final TaskListener listener,
+            boolean isTagged) {
         this.run = run;
         this.workspace = workspace;
         this.listener = listener;
         this.wtLogger = new WTLogger(this.listener);
+        this.isTagged = isTagged;
     }
 
-    public static WorkItemResolver create(final Run<?, ?> run, final FilePath workspace, final TaskListener listener) {
-        return new WorkItemResolver(run, workspace, listener);
+    public WorkItemResolver(final Run<?, ?> run, final FilePath workspace, final TaskListener listener) {
+        this(run, workspace, listener, false);
     }
 
     public List<String> resolve() {
@@ -69,11 +73,14 @@ public class WorkItemResolver {
             wtLogger.info("Extract work items error from message body " + e.getMessage());
         }
 
-        try {
-            fromTag();
-        } catch (final Exception e) {
-            wtLogger.info("Extract work items error from tag " + e.getMessage());
+        if (isTagged) {
+            try {
+                fromTag();
+            } catch (final Exception e) {
+                wtLogger.info("Extract work items error from tag " + e.getMessage());
+            }
         }
+
         final List<String> matches = WTHelper.matches(pattern, new ArrayList<>(collection), false, false);
         return WTHelper.formatWorkItems(matches);
     }
@@ -240,14 +247,14 @@ public class WorkItemResolver {
                     if (tags != null && !tags.isEmpty()) {
                         Ref tag0 = tags.get(0);
                         Ref peeledRef0 = fileRepository.getRefDatabase().peel(tag0);
-                        wtLogger.info("tags.get(0) = " + tag0.getName());
+                        wtLogger.info("current tag = " + tag0.getName());
                         ObjectId utilId = peeledRef0.getPeeledObjectId() != null ? peeledRef0.getPeeledObjectId()
                                 : tag0.getObjectId();
 
                         Ref tag1 = tags.get(1);
                         ObjectId startId = null;
                         if (tag1 != null) {
-                            wtLogger.info("tags.get(1) = " + tag1.getName());
+                            wtLogger.info("previous tag = " + tag1.getName());
                             Ref peeledRef1 = fileRepository.getRefDatabase().peel(tag1);
                             startId = peeledRef1.getPeeledObjectId() != null ? peeledRef1.getPeeledObjectId()
                                     : tag1.getObjectId();
@@ -258,7 +265,6 @@ public class WorkItemResolver {
                         for (RevCommit commit : logs) {
                             if (commit != null) {
                                 String message = commit.getFullMessage();
-                                logger.info("message in tags " + message);
                                 if (message != null) {
                                     messages.add(message);
                                 }

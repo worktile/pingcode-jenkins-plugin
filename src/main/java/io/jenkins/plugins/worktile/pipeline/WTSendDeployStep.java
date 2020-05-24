@@ -38,6 +38,9 @@ public class WTSendDeployStep extends Step implements Serializable {
     @DataBoundSetter
     private String status;
 
+    @DataBoundSetter
+    private boolean isTagged;
+
     @DataBoundConstructor
     public WTSendDeployStep(String releaseName, String environmentName) {
         this.releaseName = releaseName;
@@ -83,7 +86,7 @@ public class WTSendDeployStep extends Step implements Serializable {
             }
 
             WTDeployEntity entity = WTDeployEntity.from(run, workspace, listener, this.step.status,
-                    this.step.releaseName, this.step.releaseURL, envId);
+                    this.step.releaseName, this.step.releaseURL, envId, this.step.isTagged);
 
             wtLogger.info("Will send data to worktile: " + entity.toString());
             try {

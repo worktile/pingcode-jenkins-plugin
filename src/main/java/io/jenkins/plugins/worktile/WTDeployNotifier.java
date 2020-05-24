@@ -33,11 +33,23 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
 
     private String releaseUrl;
 
+    private boolean tagged;
+
     @DataBoundConstructor
-    public WTDeployNotifier(final String releaseName, final String environmentName, final String releaseUrl) {
+    public WTDeployNotifier(final String releaseName, final String environmentName, final String releaseUrl,
+            boolean tagged) {
         setReleaseName(releaseName);
         setReleaseUrl(releaseUrl);
         setEnvironmentName(environmentName);
+        setTagged(tagged);
+    }
+
+    public boolean getTagged() {
+        return tagged;
+    }
+
+    public void setTagged(boolean tagged) {
+        this.tagged = tagged;
     }
 
     @Override
@@ -58,7 +70,8 @@ public class WTDeployNotifier extends Notifier implements SimpleBuildStep {
             }
         }
 
-        WTDeployEntity entity = WTDeployEntity.from(run, workspace, listener, getReleaseName(), getReleaseUrl(), envId);
+        WTDeployEntity entity = WTDeployEntity.from(run, workspace, listener, getReleaseName(), getReleaseUrl(), envId,
+                tagged);
         wtLogger.info("Will send data to worktile: " + entity.toString());
         try {
             service.createDeploy(entity);

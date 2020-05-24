@@ -17,24 +17,16 @@ public class WTDeployEntity {
     public long duration;
     public String[] workItemIdentifiers;
 
-    public static WTDeployEntity from(
-        Run<?, ?> run, FilePath workspace, TaskListener listener, String releaseName, String releaseUrl, String envId
-    ) {
-        return WTDeployEntity.from(run, workspace, listener, null, releaseName, releaseUrl, envId);
+    public static WTDeployEntity from(Run<?, ?> run, FilePath workspace, TaskListener listener, String releaseName,
+            String releaseUrl, String envId, boolean isTagged) {
+        return WTDeployEntity.from(run, workspace, listener, null, releaseName, releaseUrl, envId, isTagged);
     }
 
-    public static WTDeployEntity from(
-        Run<?, ?> run,
-        FilePath workspace,
-        TaskListener listener,
-        String status,
-        String releaseName,
-        String releaseUrl,
-        String envId
-    ) {
+    public static WTDeployEntity from(Run<?, ?> run, FilePath workspace, TaskListener listener, String status,
+            String releaseName, String releaseUrl, String envId, boolean isTagged) {
         WTDeployEntity entity = new WTDeployEntity();
 
-        if(status == null) {
+        if (status == null) {
             String autoStatus = WTHelper.statusOfRun(run);
             status = autoStatus.equals("success") ? Status.Deployed.getValue() : Status.NotDeployed.getValue();
         }
@@ -47,9 +39,9 @@ public class WTDeployEntity {
         entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());
         entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
         entity.duration = Math.subtractExact(entity.endAt, entity.startAt);
-        entity.workItemIdentifiers = new WorkItemResolver(run, workspace, listener)//
-            .resolve()//
-            .toArray(new String[0]);
+        entity.workItemIdentifiers = new WorkItemResolver(run, workspace, listener, isTagged)//
+                .resolve()//
+                .toArray(new String[0]);
         return entity;
     }
 
@@ -58,8 +50,7 @@ public class WTDeployEntity {
     }
 
     public enum Status {
-        Deployed("deployed"),
-        NotDeployed("not_deployed");
+        Deployed("deployed"), NotDeployed("not_deployed");
 
         private final String value;
 
