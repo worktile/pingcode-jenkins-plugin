@@ -48,7 +48,6 @@ public class WorkItemResolver {
         this.wtLogger = new WTLogger(this.listener);
     }
 
-    @SuppressWarnings("rawtypes")
     public static WorkItemResolver create(final Run<?, ?> run, final FilePath workspace, final TaskListener listener) {
         return new WorkItemResolver(run, workspace, listener);
     }
@@ -126,8 +125,7 @@ public class WorkItemResolver {
         RunWithSCM runWithScm = null;
         if (run instanceof AbstractBuild<?, ?>) {
             runWithScm = (AbstractBuild<?, ?>) run;
-        } //
-        else if (run instanceof WorkflowRun) {
+        } else if (run instanceof WorkflowRun) {
             runWithScm = (WorkflowRun) run;
         }
         return runWithScm;
