@@ -17,9 +17,19 @@ Commit message and pull request title|Supports bind to multiple `#IDENTIFIER` sp
 
 ## Install
 
-   1. Login to your Jenkins server.
-   2. Navigate to the Plugin Manager.
-   3. Select the "Available" tab and search for `Worktile` as the plugin name then install it.
+### Jenkins Marketplace
+
+1. Login to your Jenkins server.
+2. Navigate to the Plugin Manager.
+3. Select the "Available" tab and search for `Worktile` as the plugin name then install it.
+
+### Manual
+
+1. Download worktile.hpi from [worktile jenkins plugins release page](https://github.com/worktile/wt-rd-jenkins-plugin/releases).
+2. Login to your Jenkins server.
+3. Navigate to the Plugin Manager.
+4. Select the "Advanced" tab and navigate to the Upload Plugin, upload worktile.hpi file.
+5. Restart jenkins for the update to take effect.
 
 ## Configure
 
@@ -65,7 +75,7 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
 
    1. Select `Worktile: create build record`.
    2. Enter the following information:
-  
+
        - `Overview pattern` - Optional. A regular expression is used to match the result summary in the build output for display in Worktile.
 
        ![YqA1XQ.png](https://s1.ax1x.com/2020/05/21/YqA1XQ.png)
