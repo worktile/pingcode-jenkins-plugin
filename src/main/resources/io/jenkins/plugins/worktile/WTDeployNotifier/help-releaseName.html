@@ -1,3 +1,8 @@
 <div>
-    版本发布的名称。
+    The name of the release. You can use environment variables for dynamic variable substitution in the name.
+    <br>
+    For example: release-${BUILD_ID}, which means that the release name is dynamically generated using the BUILD_ID. All
+    environment
+    variables injected by the plugin can be used. If the environment variable does not exist, the source character will
+    be retained.
 </div>

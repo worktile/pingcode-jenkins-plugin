@@ -24,73 +24,70 @@ import java.io.IOException;
 
 public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
 
-  private String overview;
+    private String overview;
 
-  @DataBoundConstructor
-  public WTBuildNotifier(String overview) {
-    setOverview(overview);
-  }
-
-  @Override
-  public void perform(
-      @Nonnull Run<?, ?> run,
-      @Nonnull FilePath workspace,
-      @Nonnull Launcher launcher,
-      @Nonnull TaskListener listener)
-      throws IOException, InternalError {
-    this.createBuild(run, listener);
-  }
-
-  private void createBuild(Run<?, ?> run, @Nonnull TaskListener listener) throws IOException {
-    WTLogger logger = new WTLogger(listener);
-    WTBuildEntity entity = WTBuildEntity.from(run, getOverview());
-
-    WTRestService service = new WTRestService();
-    logger.info("Will send data to worktile: " + entity.toString());
-    try {
-      service.createBuild(entity);
-      logger.info("Send to to worktile successfully");
-    } catch (Exception error) {
-      logger.error(error.getMessage());
-    }
-  }
-
-  public String getOverview() {
-    return overview;
-  }
-
-  @DataBoundSetter
-  public void setOverview(String overview) {
-    this.overview = overview;
-  }
-
-  @Override
-  public BuildStepMonitor getRequiredMonitorService() {
-    return BuildStepMonitor.NONE;
-  }
-
-  @Extension
-  public static class Descriptor extends BuildStepDescriptor<Publisher> {
-    public Descriptor() {
-      super(WTBuildNotifier.class);
+    @DataBoundConstructor
+    public WTBuildNotifier(String overview) {
+        setOverview(overview);
     }
 
     @Override
-    public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-      return true;
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
+            @Nonnull TaskListener listener) throws IOException, InternalError {
+        this.createBuild(run, workspace, listener);
     }
 
-    @NotNull
-    @Override
-    public String getDisplayName() {
-      return "Worktile build notifier";
+    private void createBuild(Run<?, ?> run, FilePath workspace, @Nonnull TaskListener listener) throws IOException {
+        WTLogger logger = new WTLogger(listener);
+        WTBuildEntity entity = WTBuildEntity.from(run, workspace, listener, getOverview());
+
+        WTRestService service = new WTRestService();
+        logger.info("Will send data to worktile: " + entity.toString());
+        try {
+            service.createBuild(entity);
+            logger.info("Create worktile build record successfully.");
+        } //
+        catch (Exception error) {
+            logger.error(error.getMessage());
+        }
+    }
+
+    public String getOverview() {
+        return overview;
+    }
+
+    @DataBoundSetter
+    public void setOverview(String overview) {
+        this.overview = overview;
     }
 
     @Override
-    public WTBuildNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData)
-        throws FormException {
-      assert request != null;
-      return request.bindJSON(WTBuildNotifier.class, formData);
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
     }
-  }
+
+    @Extension
+    public static class Descriptor extends BuildStepDescriptor<Publisher> {
+        public Descriptor() {
+            super(WTBuildNotifier.class);
+        }
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return true;
+        }
+
+        @NotNull
+        @Override
+        public String getDisplayName() {
+            return Messages.WTBuildNotifier_DisplayName();
+        }
+
+        @Override
+        public WTBuildNotifier newInstance(StaplerRequest request, @NotNull JSONObject formData) throws FormException {
+            assert request != null;
+            return request.bindJSON(WTBuildNotifier.class, formData);
+        }
+    }
 }

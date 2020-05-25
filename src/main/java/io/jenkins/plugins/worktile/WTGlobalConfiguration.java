@@ -8,6 +8,7 @@ import hudson.Util;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import io.jenkins.plugins.worktile.model.WTRestException;
 import io.jenkins.plugins.worktile.resolver.SecretResolver;
 import io.jenkins.plugins.worktile.service.WTRestService;
 import jenkins.model.GlobalConfiguration;
@@ -86,73 +87,61 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     try {
       req.bindJSON(this, formatData);
     } catch (Exception e) {
-      throw new FormException(e.getMessage(), e, "globalConfig");
+      throw new FormException(e.getMessage(), e, Messages.WTGlobalConfig_GlobalConfigError());
     }
     save();
     return true;
   }
 
-  public FormValidation doCheckEndpoint(
-      @QueryParameter(value = "endpoint", fixEmpty = true) String endpoint) {
+  public FormValidation doCheckEndpoint(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint) {
     if (WTHelper.isNotBlank(endpoint) && !WTHelper.isURL(endpoint)) {
-      return FormValidation.error("endpoint format error");
+      return FormValidation.error(Messages.WTGlobalConfig_OpenApiEndpointError());
     }
     return FormValidation.ok();
   }
 
-  public FormValidation doCheckClientId(
-      @QueryParameter(value = "clientId", fixEmpty = true) String clientId) {
-    return WTHelper.isNotBlank(clientId)
-        ? FormValidation.ok()
-        : FormValidation.error("client id can not be empty");
+  public FormValidation doCheckClientId(@QueryParameter(value = "clientId", fixEmpty = true) String clientId) {
+    return WTHelper.isNotBlank(clientId) ? FormValidation.ok()
+        : FormValidation.error(Messages.WTGlobalConfig_ClientIdError());
   }
 
   public FormValidation doCheckCredentialsId(
       @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) {
-    return WTHelper.isNotBlank(credentialsId)
-        ? FormValidation.ok()
-        : FormValidation.error("credentialsId can not be empty");
+    return WTHelper.isNotBlank(credentialsId) ? FormValidation.ok()
+        : FormValidation.error(Messages.WTGlobalConfig_CredentialsIdEmpty());
   }
 
-  public FormValidation doTestConnection(
-      @QueryParameter(value = "endpoint", fixEmpty = true) String endpoint,
+  public FormValidation doTestConnection(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint,
       @QueryParameter(value = "clientId", fixEmpty = true) String clientId,
-      @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId)
-      throws IOException {
+      @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) throws IOException {
 
-    if (StringUtils.isEmpty(credentialsId)
-        || StringUtils.isEmpty(endpoint)
-        || StringUtils.isEmpty(clientId)) {
-      return FormValidation.error("error");
+    if (StringUtils.isEmpty(credentialsId) || StringUtils.isEmpty(endpoint) || StringUtils.isEmpty(clientId)) {
+      return FormValidation.error(Messages.WTGlobalConfig_AnyOfIdError());
     }
+
     Optional<String> secret = SecretResolver.getSecretOf(credentialsId);
     if (!secret.isPresent()) {
-      return FormValidation.error("secret not found or wrong");
+      return FormValidation.error(Messages.WTGlobalConfig_CredentialsIdNotSelectOrError());
     }
-    WTRestService session = new WTRestService(WTHelper.apiV1(endpoint), clientId, secret.get());
+    WTRestService service = new WTRestService(WTHelper.apiV1(endpoint), clientId, secret.get());
 
     try {
-      session.doConnectTest();
-      return FormValidation.ok("Connect worktile API successfully");
+      service.doConnectTest();
+      return FormValidation.ok(Messages.WTGlobalConfig_DoTestConnectionSuccessfully());
+    } catch (WTRestException e) {
+      return FormValidation.error(Messages.WTGlobalConfig_DoTestConnectionFailure() + ": "
+          + Messages.WTGlobalConfig_ClientIdOrClientSecretError());
     } catch (Exception e) {
-      logger.warning("test connect error " + e.getMessage());
-      return FormValidation.error("Connect Worktile OpenApi Error; err : " + e.getMessage());
+      return FormValidation.error(Messages.WTGlobalConfig_DoTestConnectionFailure() + e.getMessage());
     }
   }
 
-  public ListBoxModel doFillCredentialsIdItems(
-      @QueryParameter final String endpoint,
-      @QueryParameter final String clientId,
-      @QueryParameter final String credentialsId) {
+  public ListBoxModel doFillCredentialsIdItems(@QueryParameter final String endpoint,
+      @QueryParameter final String clientId, @QueryParameter final String credentialsId) {
 
-    return new StandardListBoxModel()
-        .includeEmptyValue()
-        .includeMatchingAs(
-            ACL.SYSTEM,
-            Jenkins.get(),
-            StringCredentials.class,
-            URIRequirementBuilder.fromUri(StringUtils.defaultIfBlank(endpoint, DEFAULT_ENDPOINT))
-                .build(),
-            CredentialsMatchers.always());
+    return new StandardListBoxModel().includeEmptyValue().includeMatchingAs(ACL.SYSTEM, Jenkins.get(),
+        StringCredentials.class,
+        URIRequirementBuilder.fromUri(StringUtils.defaultIfBlank(endpoint, DEFAULT_ENDPOINT)).build(),
+        CredentialsMatchers.always());
   }
 }
