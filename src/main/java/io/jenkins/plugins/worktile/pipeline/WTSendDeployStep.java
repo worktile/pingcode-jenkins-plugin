@@ -23,105 +23,109 @@ import java.io.Serializable;
 import java.util.Set;
 
 public class WTSendDeployStep extends Step implements Serializable {
-  private static final long serialVersionUID = 1L;
-
-  private final String releaseName;
-
-  private final String environmentName;
-
-  @DataBoundSetter
-  private String releaseURL;
-
-  @DataBoundSetter
-  private boolean failOnError;
-
-  @DataBoundSetter
-  private String status;
-
-  @DataBoundConstructor
-  public WTSendDeployStep(String releaseName, String environmentName) {
-    this.releaseName = releaseName;
-    this.environmentName = environmentName;
-  }
-
-  @Override
-  public StepExecution start(StepContext context) throws Exception {
-    return new WTSendDeployStepExecution(context, this);
-  }
-
-  public static class WTSendDeployStepExecution extends SynchronousNonBlockingStepExecution<Boolean> {
     private static final long serialVersionUID = 1L;
 
-    private final WTSendDeployStep step;
+    private final String releaseName;
 
-    public WTSendDeployStepExecution(StepContext context, WTSendDeployStep step) {
-      super(context);
-      this.step = step;
+    private final String environmentName;
+
+    @DataBoundSetter
+    private String releaseURL;
+
+    @DataBoundSetter
+    private boolean failOnError;
+
+    @DataBoundSetter
+    private String status;
+
+    @DataBoundSetter
+    private boolean isTagged;
+
+    @DataBoundConstructor
+    public WTSendDeployStep(String releaseName, String environmentName) {
+        this.releaseName = releaseName;
+        this.environmentName = environmentName;
     }
 
     @Override
-    public Boolean run() throws Exception {
-      WorkflowRun run = getContext().get(WorkflowRun.class);
-      assert run != null;
-      TaskListener listener = getContext().get(TaskListener.class);
-      WTLogger wtLogger = new WTLogger(listener);
+    public StepExecution start(StepContext context) throws Exception {
+        return new WTSendDeployStepExecution(context, this);
+    }
 
-      WTRestService service = new WTRestService();
-      String envId = null;
-      try {
-        envId = handleEnvName(this.step.environmentName, service);
-      } catch (Exception exception) {
-        wtLogger.error(exception.getMessage());
-        if (exception instanceof WTRestException) {
-          if (!((WTRestException) exception).getCode().equals("100105") && this.step.failOnError) {
-            throw new AbortException(exception.getMessage());
-          }
-        } else if (this.step.failOnError) {
-          throw new AbortException(exception.getMessage());
+    public static class WTSendDeployStepExecution extends SynchronousNonBlockingStepExecution<Boolean> {
+        private static final long serialVersionUID = 1L;
+
+        private final WTSendDeployStep step;
+
+        public WTSendDeployStepExecution(StepContext context, WTSendDeployStep step) {
+            super(context);
+            this.step = step;
         }
-      }
 
-      WTDeployEntity entity = WTDeployEntity.from(run, this.step.status, this.step.releaseName, this.step.releaseURL,
-          envId);
+        @Override
+        public Boolean run() throws Exception {
+            WorkflowRun run = getContext().get(WorkflowRun.class);
+            FilePath workspace = getContext().get(FilePath.class);
+            TaskListener listener = getContext().get(TaskListener.class);
 
-      wtLogger.info("Will send data to worktile: " + entity.toString());
-      try {
-        service.createDeploy(entity);
-        wtLogger.info("Create worktile deploy record successfully.");
-      } catch (Exception exception) {
-        wtLogger.error(exception.getMessage());
-        if (this.step.failOnError) {
-          throw new AbortException(exception.getMessage());
+            WTLogger wtLogger = new WTLogger(listener);
+
+            WTRestService service = new WTRestService();
+            String envId = null;
+            try {
+                envId = handleEnvName(this.step.environmentName, service);
+            } catch (Exception exception) {
+                wtLogger.error(exception.getMessage());
+                if (exception instanceof WTRestException) {
+                    if (!((WTRestException) exception).getCode().equals("100105") && this.step.failOnError) {
+                        throw new AbortException(exception.getMessage());
+                    }
+                } else if (this.step.failOnError) {
+                    throw new AbortException(exception.getMessage());
+                }
+            }
+
+            WTDeployEntity entity = WTDeployEntity.from(run, workspace, listener, this.step.status,
+                    this.step.releaseName, this.step.releaseURL, envId, this.step.isTagged);
+
+            wtLogger.info("Will send data to worktile: " + entity.toString());
+            try {
+                service.createDeploy(entity);
+                wtLogger.info("Create worktile deploy record successfully.");
+            } catch (Exception exception) {
+                wtLogger.error(exception.getMessage());
+                if (this.step.failOnError) {
+                    throw new AbortException(exception.getMessage());
+                }
+            }
+            return true;
         }
-      }
-      return true;
+
+        public String handleEnvName(String name, WTRestService service) throws IOException, WTRestException {
+            WTEnvironmentSchema schema = service.getEnvironmentByName(name);
+            if (schema == null) {
+                schema = service.createEnvironment(new WTEnvironmentEntity(name));
+            }
+            return schema.id;
+        }
     }
 
-    public String handleEnvName(String name, WTRestService service) throws IOException, WTRestException {
-      WTEnvironmentSchema schema = service.getEnvironmentByName(name);
-      if (schema == null) {
-        schema = service.createEnvironment(new WTEnvironmentEntity(name));
-      }
-      return schema.id;
-    }
-  }
+    @Extension
+    public static class DescriptorImpl extends StepDescriptor {
+        @Override
+        public Set<Class<?>> getRequiredContext() {
+            return ImmutableSet.of(Run.class, EnvVars.class, TaskListener.class, FilePath.class);
+        }
 
-  @Extension
-  public static class DescriptorImpl extends StepDescriptor {
-    @Override
-    public Set<Class<?>> getRequiredContext() {
-      return ImmutableSet.of(Run.class, EnvVars.class, TaskListener.class, FilePath.class);
-    }
+        @Override
+        public String getFunctionName() {
+            return "worktileDeployRecord";
+        }
 
-    @Override
-    public String getFunctionName() {
-      return "worktileDeployRecord";
+        @org.jetbrains.annotations.NotNull
+        @Override
+        public String getDisplayName() {
+            return "Send deploy result to worktile";
+        }
     }
-
-    @org.jetbrains.annotations.NotNull
-    @Override
-    public String getDisplayName() {
-      return "Send deploy result to worktile";
-    }
-  }
 }
