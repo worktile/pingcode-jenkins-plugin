@@ -23,7 +23,7 @@ Commit message and pull request title|Supports bind to multiple `#IDENTIFIER` sp
 2. Navigate to the Plugin Manager.
 3. Select the "Available" tab and search for `Worktile` as the plugin name then install it.
 
-### Manual
+### Manual Install
 
 1. Download worktile.hpi from [worktile jenkins plugins release page](https://github.com/worktile/wt-rd-jenkins-plugin/releases).
 2. Login to your Jenkins server.
