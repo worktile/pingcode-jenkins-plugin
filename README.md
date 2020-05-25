@@ -22,6 +22,7 @@ Commit message and pull request title|Supports bind to multiple `#IDENTIFIER` sp
 1. Login to your Jenkins server.
 2. Navigate to the Plugin Manager.
 3. Select the "Available" tab and search for `Worktile` as the plugin name then install it.
+4. Restart jenkins for the install to take effect.
 
 ### Manual Install
 
@@ -29,7 +30,7 @@ Commit message and pull request title|Supports bind to multiple `#IDENTIFIER` sp
 2. Login to your Jenkins server.
 3. Navigate to the Plugin Manager.
 4. Select the "Advanced" tab and navigate to the Upload Plugin, upload worktile.hpi file.
-5. Restart jenkins for the update to take effect.
+5. Restart jenkins for the install to take effect.
 
 ## Configure
 
