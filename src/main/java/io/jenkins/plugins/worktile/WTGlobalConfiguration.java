@@ -119,8 +119,8 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
     }
 
     @POST
-    @SuppressWarnings("unused")
     @Restricted(DoNotUse.class)
+    @SuppressWarnings("unused")
     public FormValidation doTestConnection(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint,
             @QueryParameter(value = "clientId", fixEmpty = true) String clientId,
             @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) throws IOException {
