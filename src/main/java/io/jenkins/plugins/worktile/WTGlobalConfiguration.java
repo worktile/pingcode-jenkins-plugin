@@ -16,9 +16,13 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -93,6 +97,7 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         return true;
     }
 
+    @SuppressWarnings("unused")
     public FormValidation doCheckEndpoint(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint) {
         if (WTHelper.isNotBlank(endpoint) && !WTHelper.isURL(endpoint)) {
             return FormValidation.error(Messages.WTGlobalConfig_OpenApiEndpointError());
@@ -100,20 +105,28 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
         return FormValidation.ok();
     }
 
+    @SuppressWarnings("unused")
     public FormValidation doCheckClientId(@QueryParameter(value = "clientId", fixEmpty = true) String clientId) {
         return WTHelper.isNotBlank(clientId) ? FormValidation.ok()
                 : FormValidation.error(Messages.WTGlobalConfig_ClientIdError());
     }
 
+    @SuppressWarnings("unused")
     public FormValidation doCheckCredentialsId(
             @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) {
         return WTHelper.isNotBlank(credentialsId) ? FormValidation.ok()
                 : FormValidation.error(Messages.WTGlobalConfig_CredentialsIdEmpty());
     }
 
+    @POST
+    @SuppressWarnings("unused")
+    @Restricted(DoNotUse.class)
     public FormValidation doTestConnection(@QueryParameter(value = "endpoint", fixEmpty = true) String endpoint,
             @QueryParameter(value = "clientId", fixEmpty = true) String clientId,
             @QueryParameter(value = "credentialsId", fixEmpty = true) String credentialsId) throws IOException {
+
+        // Check permission, only ADMINISTER
+        Jenkins.get().hasPermission(Jenkins.ADMINISTER);
 
         if (StringUtils.isEmpty(credentialsId) || StringUtils.isEmpty(endpoint) || StringUtils.isEmpty(clientId)) {
             return FormValidation.error(Messages.WTGlobalConfig_AnyOfIdError());
@@ -132,10 +145,11 @@ public class WTGlobalConfiguration extends GlobalConfiguration {
             return FormValidation.error(Messages.WTGlobalConfig_DoTestConnectionFailure() + ": "
                     + Messages.WTGlobalConfig_ClientIdOrClientSecretError());
         } catch (Exception e) {
-            return FormValidation.error(Messages.WTGlobalConfig_DoTestConnectionFailure() + e.getMessage());
+            return FormValidation.error(Messages.WTGlobalConfig_DoTestConnectionFailure() + ": " + e.getMessage());
         }
     }
 
+    @SuppressWarnings("unused")
     public ListBoxModel doFillCredentialsIdItems(@QueryParameter final String endpoint,
             @QueryParameter final String clientId, @QueryParameter final String credentialsId) {
 
