@@ -14,24 +14,21 @@ f.section(title: _('Worktile application')) {
     }
 
     f.entry(title:_('Client Secret'), field:'credentialsId') {
-        c.select(onchange = """{
+        c.select(onchange: """{
             var self = this.targetElement ? this.targetElement : this;
             var r = findPreviousFormItem(self,'url');
             r.onchange(r);
             self = null;
             r = null;
-        }""" /* workaround for JENKINS-19124 */)
+        }""", context: app, includeUser: false, expressionAllowed: false)
     }
 
     f.entry(title: _('')) {
-        f.validateButton(title: 'Test Connection', method: 'testConnection', with: 'endpoint,clientId,credentialsId')
+        f.validateButton(
+            title: 'Test Connection',
+            method: 'testConnection',
+            progress: _("Testing..."),
+            with: 'endpoint,clientId,credentialsId'
+        )
     }
-
-    // f.advanced(align: 'left') {
-    //     f.entry(title: _('deploy environments')) {
-    //         f.repeatableHeteroProperty(field: 'envConfigs', items: instance.envConfigs, hasHeader: true) {
-    //             f.repeatableDeleteButton()
-    //         }
-    //     }
-    // }
 }

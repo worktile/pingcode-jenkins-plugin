@@ -27,8 +27,7 @@ public class WTHelper {
         try {
             new URL(url).toURI();
             return true;
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             return false;
         }
     }
@@ -64,8 +63,7 @@ public class WTHelper {
     public static EnvVars safeEnvVars(Run<?, ?> run) {
         try {
             return run.getEnvironment(TaskListener.NULL);
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             return new EnvVars();
         }
     }
@@ -75,36 +73,27 @@ public class WTHelper {
     }
 
     public static String resolveOverview(Run<?, ?> run, String overviewPattern) {
-        if(overviewPattern == null) {
+        if (overviewPattern == null || overviewPattern.equals("")) {
             return null;
         }
+        Pattern pattern = Pattern.compile(overviewPattern);
         try {
-            Pattern pattern = Pattern.compile(overviewPattern);
-            List<String> matched = WTHelper.matches(pattern, run.getLog(999), true, true);
-            return matched.size() > 0 ? matched.get(0) : null;
-        }
-        catch(Exception exception) {
+            List<String> logs = run.getLog(999);
+            for (String log : logs) {
+                Matcher matcher = pattern.matcher(log);
+                if (matcher.find()) {
+                    return log;
+                }
+            }
+            return null;
+        } catch (Exception exception) {
             return null;
         }
-    }
-
-    public static List<String> matches(
-        Pattern pattern, List<String> contexts, boolean breakOnMatch, boolean origin
-    ) {
-        HashSet<String> set = new HashSet<>();
-        for(String context : contexts) {
-            Matcher matcher = pattern.matcher(context);
-            while(matcher.find()) {
-                set.add(origin ? context : matcher.group().toUpperCase());
-            }
-            if(breakOnMatch) { break; }
-        }
-        return new ArrayList<>(set);
     }
 
     public static List<String> formatWorkItems(List<String> workItems) {
         HashSet<String> set = new HashSet<>();
-        for(String item : workItems) {
+        for (String item : workItems) {
             set.add(item.substring(1));
         }
         return new ArrayList<>(set);
