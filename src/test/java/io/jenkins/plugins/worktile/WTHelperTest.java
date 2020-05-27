@@ -1,13 +1,16 @@
 package io.jenkins.plugins.worktile;
 
-import io.jenkins.plugins.worktile.resolver.WorkItemResolver;
+import hudson.model.Run;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class WTHelperTest {
 
@@ -22,9 +25,10 @@ public class WTHelperTest {
         /* pattern */
         List<String> items1 = WTHelper.formatWorkItems(Arrays.asList("#PLM-000", "#PLM-0001"));
         assertEquals(2, items1.size());
-        items1.forEach(item -> {
-            assertFalse(item.startsWith("#"));
-        });
+        items1.forEach(
+                item -> {
+                    assertFalse(item.startsWith("#"));
+                });
     }
 
     @Test
@@ -36,30 +40,20 @@ public class WTHelperTest {
     }
 
     @Test
-    public void testMatches() {
-        Pattern pattern = WorkItemResolver.pattern;
-        List<String> contexts = Arrays.asList(//
-                "yourName/#PLM-000", // ..
-                "feat(refactor): #PLM-001 some context do refactor", //
-                "feat(refactor): #PLM-000 do refactor", // ..
-                "feat(refactor): #PLM-123 #PLM234" // ..
-        );
+    public void testGetReviewResult() throws IOException {
+        Run<?, ?> run = mock(Run.class);
+        when(run.getLog(anyInt()))
+                .thenReturn(
+                        Arrays.asList(
+                                "using credential 0eb6598a-7c2a-4ef2-a2eb-64934de6b415",
+                                "hello, world",
+                                "Run test cases  38369",
+                                " 788 passing (13s)",
+                                "Statements   : 92.55% ( 3129/3381 )"));
+        String matched = WTHelper.resolveOverview(run, "^*passing");
+        assertEquals(matched, " 788 passing (13s)");
 
-        {
-            List<String> matches = WTHelper.matches(pattern, contexts, false, false);
-            assertEquals(matches.size(), 3);
-        }
-        {
-            List<String> matches = WTHelper.matches(pattern, contexts, true, false);
-            assertEquals(matches.size(), 1);
-        }
-        {
-            List<String> matches = WTHelper.matches(pattern, contexts, true, true);
-            assertEquals(matches.size(), 1);
-        }
-        {
-            List<String> matches = WTHelper.matches(pattern, contexts, false, true);
-            assertEquals(matches.size(), 4);
-        }
+        String Statements = WTHelper.resolveOverview(run, "Statements");
+        assertEquals(Statements, "Statements   : 92.55% ( 3129/3381 )");
     }
 }
