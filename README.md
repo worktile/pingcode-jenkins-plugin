@@ -10,10 +10,10 @@
 
 Using `#IDENTIFIER`in your commit messages, branch names and pull request titles, then the Jenkins plugin will automatically connect related builds and deployments when the job is running. As a result, team members will find the builds/deployments with related work items. `IDENTIFIER` is a unique identifier of a work item which can be found in Worktile at the top-left corner in its popup window.
 
-Category|Syntax|Example
----| --- | ---
-Branch name| Supports bind to multiple `#IDENTIFIER` split "/".| terry/#PLM-100/#PLM-101
-Commit message and pull request title|Supports bind to multiple `#IDENTIFIER` split by space.|fix(doc): #PLM-100 #PLM-101 update the doc
+| Category                              | Syntax                                                  | Example                                    |
+| ------------------------------------- | ------------------------------------------------------- | ------------------------------------------ |
+| Branch name                           | Supports bind to multiple `#IDENTIFIER` split "/".      | terry/#PLM-100/#PLM-101                    |
+| Commit message and pull request title | Supports bind to multiple `#IDENTIFIER` split by space. | fix(doc): #PLM-100 #PLM-101 update the doc |
 
 ## Install
 
@@ -78,8 +78,11 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
    2. Enter the following information:
 
        - `Overview pattern` - Optional. A regular expression is used to match the result summary in the build output for display in Worktile.
+         ![YqA1XQ.png](https://s1.ax1x.com/2020/05/21/YqA1XQ.png)
 
-       ![YqA1XQ.png](https://s1.ax1x.com/2020/05/21/YqA1XQ.png)
+       - `Default summary` - Optional. If no information can be matched from the result logs, this value will be sent by default.
+
+         ![default summary](https://s1.ax1x.com/2020/06/16/NFT7o6.png)
 
   Finally, save these configurations. When the build is triggered, it will post the build information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name, commit message or pull request title, you will get views in Worktile agile project about what happening on build.
 
@@ -104,17 +107,23 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
 
   ``` syntaxhighlighter-pre
     node {
-       try {
-           sh "printenv"
-       }catch(e) {
-           echo e.getMessage()
-       }
-       finally{
-           worktileBuildRecord(
-               overviewPattern: "^JENKINS",
-               failOnError: false
-           )
-       }
+        def summaryMessage = "Summary message"
+
+        try {
+            sh "printenv"
+            summaryMessage = "Great, build successfully."
+        }
+        catch(e) {
+            echo e.getMessage()
+            summaryMessage = e.getMessage()
+        }
+        finally{
+            worktileBuildRecord(
+                overviewPattern: "^JENKINS",
+                defaultSummary: "${summaryMessage}"
+                failOnError: false
+            )
+        }
     }
   ```
 
@@ -122,6 +131,7 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
   About `worktileBuildRecord`, you can get the following information:
 
 - `overviewPattern` - Optional. A regular expression is used to match the result summary in the build result for display in Worktile.
+- `defaultSummary` - Optional. If no information can be matched from the result logs, this value will be sent by default.
 - `failOnError` - Optional. When the value is true, if the process of sending build data to Worktile fails, the entire build will be marked as failed in Jenkins, otherwise Jenkins' build results will not be affected by it. The default value is false.
 
 ##### Send deployment information
@@ -130,19 +140,20 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
 
 ```syntaxhighlighter-pre
     node {
-       try {
-           sh "printenv"
-       }catch(e) {
-           echo e.getMessage()
-       }
-       finally{
-           worktileDeployRecord(
-              releaseName: "release-${BUILD_ID}",
-              environmentName: "Product",
-              releaseURL: "https://www.worktile.com/release-${JENKINS_HOME}",
-              failOnError: false
-          )
-       }
+        try {
+            sh "printenv"
+        }
+        catch(e) {
+            echo e.getMessage()
+        }
+        finally{
+            worktileDeployRecord(
+               releaseName: "release-${BUILD_ID}",
+               environmentName: "Product",
+               releaseURL: "https://www.worktile.com/release-${JENKINS_HOME}",
+               failOnError: false
+           )
+        }
     }
   ```
 

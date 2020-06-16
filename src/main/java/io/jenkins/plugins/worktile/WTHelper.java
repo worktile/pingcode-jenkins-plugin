@@ -72,7 +72,7 @@ public class WTHelper {
         return Math.round(Math.floorDiv(time, 1000));
     }
 
-    public static String resolveOverview(Run<?, ?> run, String overviewPattern) {
+    public static String resolveOverview(Run<?, ?> run, String overviewPattern, String defaultSummary) {
         if (overviewPattern == null || overviewPattern.equals("")) {
             return null;
         }
@@ -85,8 +85,14 @@ public class WTHelper {
                     return log;
                 }
             }
+            if (defaultSummary != null && !defaultSummary.equals("")) {
+                return defaultSummary;
+            }
             return null;
         } catch (Exception exception) {
+            if (defaultSummary != null && !defaultSummary.equals("")) {
+                return defaultSummary;
+            }
             return null;
         }
     }

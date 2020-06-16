@@ -3,4 +3,7 @@
   <f:entry title="Overview pattern" field="overview">
     <f:textbox />
   </f:entry>
+  <f:entry title="Default summary" field="defaultSummary">
+    <f:textbox />
+  </f:entry>
 </j:jelly>
