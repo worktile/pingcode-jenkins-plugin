@@ -22,12 +22,13 @@ public class WTBuildEntity {
     public long endAt;
     public long duration;
 
-    public static WTBuildEntity from(Run<?, ?> run, FilePath workspace, TaskListener listener, String pattern) {
-        return WTBuildEntity.from(run, workspace, listener, null, pattern);
+    public static WTBuildEntity from(Run<?, ?> run, FilePath workspace, TaskListener listener, String pattern,
+            String defaultSummary) {
+        return WTBuildEntity.from(run, workspace, listener, null, pattern, defaultSummary);
     }
 
     public static WTBuildEntity from(Run<?, ?> run, FilePath workspace, TaskListener listener, String status,
-            String pattern) {
+            String pattern, String defaultSummary) {
         WTBuildEntity entity = new WTBuildEntity();
         if (status == null) {
             String autoStatus = WTHelper.statusOfRun(run);
@@ -39,7 +40,7 @@ public class WTBuildEntity {
         int index = fullName.lastIndexOf("#");
         entity.name = fullName.substring(0, index).trim();
         entity.identifier = run.getId();
-        entity.resultOverview = WTHelper.resolveOverview(run, pattern);
+        entity.resultOverview = WTHelper.resolveOverview(run, pattern, defaultSummary);
         entity.startAt = WTHelper.toSafeTs(run.getStartTimeInMillis());
         entity.endAt = WTHelper.toSafeTs(System.currentTimeMillis());
         entity.duration = Math.subtractExact(entity.endAt, entity.startAt);

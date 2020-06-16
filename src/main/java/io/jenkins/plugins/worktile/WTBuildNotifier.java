@@ -3,6 +3,7 @@ package io.jenkins.plugins.worktile;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -26,9 +27,21 @@ public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
 
     private String overview;
 
+    private String defaultSummary;
+
     @DataBoundConstructor
-    public WTBuildNotifier(String overview) {
+    public WTBuildNotifier(String overview, String defaultSummary) {
         setOverview(overview);
+        setDefaultSummary(defaultSummary);
+    }
+
+    public String getDefaultSummary() {
+        return defaultSummary;
+    }
+
+    @DataBoundSetter
+    public void setDefaultSummary(String defaultSummary) {
+        this.defaultSummary = Util.fixEmptyAndTrim(defaultSummary);
     }
 
     @Override
@@ -39,7 +52,7 @@ public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
 
     private void createBuild(Run<?, ?> run, FilePath workspace, @Nonnull TaskListener listener) throws IOException {
         WTLogger logger = new WTLogger(listener);
-        WTBuildEntity entity = WTBuildEntity.from(run, workspace, listener, getOverview());
+        WTBuildEntity entity = WTBuildEntity.from(run, workspace, listener, getOverview(), getDefaultSummary());
 
         WTRestService service = new WTRestService();
         logger.info("Will send data to worktile: " + entity.toString());
@@ -58,7 +71,7 @@ public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
 
     @DataBoundSetter
     public void setOverview(String overview) {
-        this.overview = overview;
+        this.overview = Util.fixEmptyAndTrim(overview);
     }
 
     @Override

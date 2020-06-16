@@ -33,6 +33,9 @@ public class WTSendBuildStep extends Step implements Serializable {
     private String overviewPattern;
 
     @DataBoundSetter
+    private String defaultSummary;
+
+    @DataBoundSetter
     private boolean failOnError;
 
     @DataBoundSetter
@@ -64,7 +67,8 @@ public class WTSendBuildStep extends Step implements Serializable {
             FilePath workspace = getContext().get(FilePath.class);
 
             WTLogger logger = new WTLogger(listener);
-            WTBuildEntity entity = WTBuildEntity.from(run, workspace, listener, step.status, step.overviewPattern);
+            WTBuildEntity entity = WTBuildEntity.from(run, workspace, listener, step.status, step.overviewPattern,
+                    step.defaultSummary);
             WTRestService service = new WTRestService();
             logger.info("Will send data to worktile: " + entity.toString());
             try {
