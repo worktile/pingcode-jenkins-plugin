@@ -120,7 +120,7 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
         finally{
             worktileBuildRecord(
                 overviewPattern: "^JENKINS",
-                defaultSummary: "${summaryMessage}"
+                defaultSummary: "${summaryMessage}",
                 failOnError: false
             )
         }
