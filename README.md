@@ -84,6 +84,9 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
 
          ![default summary](https://s1.ax1x.com/2020/06/16/NFT7o6.png)
 
+      - `Result url` - Optional. A url of result for display in worktile. if empty, the jenkins console result url will be used.
+         ![result url](https://ftp.bmp.ovh/imgs/2020/07/59c99237e222ea52.png)
+
   Finally, save these configurations. When the build is triggered, it will post the build information to Worktile. If there is a Worktile `#IDENTIFIER` in branch name, commit message or pull request title, you will get views in Worktile agile project about what happening on build.
 
 ##### Send deployment information
@@ -121,6 +124,7 @@ The Jenkins plugin supports two styles of Jenkins items: `Freestyle project` and
             worktileBuildRecord(
                 overviewPattern: "^JENKINS",
                 defaultSummary: "${summaryMessage}",
+                resultURL: "https://your-host/result-${env.BUILD_ID}",
                 failOnError: false
             )
         }
