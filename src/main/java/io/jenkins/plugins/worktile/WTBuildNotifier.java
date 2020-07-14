@@ -29,10 +29,21 @@ public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
 
     private String defaultSummary;
 
+    private String resultURL;
+
     @DataBoundConstructor
     public WTBuildNotifier(String overview, String defaultSummary) {
         setOverview(overview);
         setDefaultSummary(defaultSummary);
+    }
+
+    public String getResultURL() {
+        return resultURL;
+    }
+
+    @DataBoundSetter
+    public void setResultURL(String resultURL) {
+        this.resultURL = resultURL;
     }
 
     public String getDefaultSummary() {
@@ -52,7 +63,8 @@ public class WTBuildNotifier extends Notifier implements SimpleBuildStep {
 
     private void createBuild(Run<?, ?> run, FilePath workspace, @Nonnull TaskListener listener) throws IOException {
         WTLogger logger = new WTLogger(listener);
-        WTBuildEntity entity = WTBuildEntity.from(run, workspace, listener, getOverview(), getDefaultSummary());
+        WTBuildEntity entity = WTBuildEntity.from(run, workspace, listener, getOverview(), getDefaultSummary(),
+                getResultURL());
 
         WTRestService service = new WTRestService();
         logger.info("Will send data to worktile: " + entity.toString());

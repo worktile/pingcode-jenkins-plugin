@@ -6,4 +6,7 @@
   <f:entry title="Default summary" field="defaultSummary">
     <f:textbox />
   </f:entry>
+   <f:entry title="Result URL" field="resultURL">
+    <f:textbox />
+  </f:entry>
 </j:jelly>
