@@ -11,6 +11,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.*;
 
 public class WTHelperTest {
 
@@ -55,5 +58,23 @@ public class WTHelperTest {
 
         String Statements = WTHelper.resolveOverview(run, "Statements");
         assertEquals(Statements, "Statements   : 92.55% ( 3129/3381 )");
+    }
+
+    @Test
+    public void parseWorkItemIdentifier() {
+        Pattern pattern = Pattern.compile("#[^(\\s|/)]*[A-Za-z0-9_-]{0,10}-[0-9]+");
+        Set<String> collection = new HashSet<>();
+        collection.add("fix(test): #FLW1-1");
+        collection.add("fix(test): #FLW-2");
+
+        Set<String> sets = new HashSet<>();
+        collection.forEach(item -> {
+            Matcher matcher = pattern.matcher(item);
+            while (matcher.find()) {
+                sets.add(matcher.group().toUpperCase());
+            }
+        });
+        assertEquals(sets.toArray()[0], "#FLW1-1");
+        assertEquals(sets.toArray()[1], "#FLW-2");
     }
 }
