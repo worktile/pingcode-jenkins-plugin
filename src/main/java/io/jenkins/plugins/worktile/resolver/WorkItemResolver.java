@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 
 public class WorkItemResolver {
     public static final Logger logger = Logger.getLogger(WorkItemResolver.class.getName());
-    public static final Pattern pattern = Pattern.compile("#[^(\\s|/)]*[A-Za-z0-9_-]{0,10}-[0-9]+");
+    public static final Pattern pattern = Pattern.compile("#[^(\\s|/)]*[A-Za-z0-9_-]{0,15}-[0-9]+");
     public static final String VCSFolder = ".git";
 
     private final Set<String> collection = new HashSet<>();
